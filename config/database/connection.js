@@ -10,7 +10,7 @@ const retryInterval = 5000;
 
 const connection = () => {
   if (connectionAttempts < maxConnectionAttempts) {
-    connect(`mongodb://localhost:27017/kaylke`, {})
+    connect(`mongodb+srv://Abdul:${encodeURIComponent('ksaha@123')}@kalyke.xbaqzbq.mongodb.net/kalyke?retryWrites=true&w=majority`, {})
       .then(() => {
         console.log("Connection successful with MongoDB");
       })

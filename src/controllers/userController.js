@@ -1,15 +1,12 @@
-import { getErrorMessage } from "../../errors/errorMessages.js";
+import { getErrorMessage, } from "../../errors/errorMessages.js";
 import userService from "../services/userService.js"
 
 export const createUserController = async(req, res) => {
   try {
-    const { userName, password, role } = req.body;
-    const created_by = req.user._id;
     const result = await userService.createUser(req.body);
 
     res.status(200).json(result);
   } catch (error) {
-    console.error(error);
     res
       .status(500)
       .json({ message: getErrorMessage(500, error), status: false });
@@ -22,16 +19,15 @@ export const loginController = async (req, res) => {
       .status(400)
       .json({ message: "Something is missing.", status: false });
   }
-
   try {
     const token = await userService.loginUser(
       req.body.userName,
       req.body.password
     );
-
     if (token) {
       res.set("Authorization", `Bearer ${token}`).status(200).json({
         message: "User successfully Logged In.",
+        token,
         status: true,
       });
     } else {
@@ -40,10 +36,9 @@ export const loginController = async (req, res) => {
         status: false,
       });
     }
-  } catch (err) {
-    console.log(err);
+  } catch (error) {
     res.status(500).json({
-      message: "Unsuccessful login. Please Try Again...",
+      message: getErrorMessage(500, error),
       status: false,
     });
   }
@@ -51,49 +46,41 @@ export const loginController = async (req, res) => {
 
 export const updateUserInfoController = async (req, res) => {
   try {
-    const _id = req.body._id;
-    const updatedUserData = {
+    const _id = req.user._id;
+    console.log(_id, '_id')
+    const newUserData = {
       userName: req.body.userName,
-      role: req.body.role,
+      description: req.body.description,
     };
 
-    const updatedUser = await userService.updateUser(_id, updatedUserData);
+    const updatedUser = await userService.updateUser(_id, newUserData);
 
     if (updatedUser) {
       res.status(200).json({
         message: "User info Updated",
         status: true,
-        updatedUser,
       });
     } else {
       res.status(404).json({ message: "User not found", status: false });
     }
-  } catch (err) {
-    console.log(err);
+  } catch (error) {
+    console.log(error)
     res.status(500).json({
-      message: "Something went wrong. Failed to update info",
-      status: false,
+      message: getErrorMessage(500, error),
     });
   }
 };
 
-export const deleteUserController = async (req, res) => {
+export const getUserProfile = async (req, res) => {
   try {
-    const _id = req.body._id;
-    const userDeleted = await userService.deleteUserById(_id);
-
-    if (userDeleted) {
-      res
-        .status(200)
-        .json({ message: "User deleted Successfully", status: true });
-    } else {
-      res.status(404).json({
-        message: "User doesn't exist or it is already deleted.",
-        status: false,
-      });
-    }
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: "Failed to delete User", status: false });
+    const _id = req.user._id;
+    const userProfile = await userService.userProfile(_id)
+    console.log(userProfile, "userProfile")
+    res.status(200).json({message: "Userinfo Found", userProfile})
+  } catch(error) {
+    res.status(error.code).json({
+      message: getErrorMessage(500, error),
+    });
   }
 };
+

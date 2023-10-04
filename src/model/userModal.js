@@ -15,32 +15,18 @@ const usersSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    firstName: String,
-    lastName: String,
-    role: {
+    description: {
       type: String,
-      required: true,
-    },
-    active: {
-      type: Boolean,
-      default: true,
+      default: null
     },
     profilePicture: String,
     createdAt: {
       type: Date,
       default: Date.now,
-    },
-    created_by: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true,
-    },
+    }
   },
   { timestamps: true }
 );
-
-usersSchema.methods.getFullName = function () {
-  return `${this.firstName} ${this.lastName}`;
-};
 
 const User = mongoose.model("User", usersSchema);
 export default User;

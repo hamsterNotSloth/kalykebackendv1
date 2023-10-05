@@ -1,16 +1,15 @@
 import { connect } from "mongoose";
 
-const dbHost = process.env.DB_HOST;
-const dbPort = process.env.DB_PORT;
-const dbName = process.env.DB_NAME;
+const mySecret = process.env['mongoDB']
+
 
 let connectionAttempts = 0;
 const maxConnectionAttempts = 5;
-const retryInterval = 5000; 
+const retryInterval = 5000;
 
 const connection = () => {
   if (connectionAttempts < maxConnectionAttempts) {
-    connect(`mongodb://localhost:27017/kaylke`, {})
+    connect(`mongodb+srv://Abdul:${encodeURIComponent('ksaha@123')}@kalyke.xbaqzbq.mongodb.net/kalyke?retryWrites=true&w=majority`, { useNewUrlParser: true, useUnifiedTopology: true })
       .then(() => {
         console.log("Connection successful with MongoDB");
       })
@@ -26,7 +25,7 @@ const connection = () => {
     console.log(
       `Maximum connection attempts (${maxConnectionAttempts}) reached. Exiting...`
     );
-    process.exit(1); 
+    process.exit(1);
   }
 };
 

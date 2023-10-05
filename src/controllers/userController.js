@@ -1,5 +1,7 @@
 import { getErrorMessage, } from "../../errors/errorMessages.js";
+import User from "../model/userModal.js";
 import userService from "../services/userService.js"
+
 
 export const createUserController = async(req, res) => {
   try {
@@ -14,28 +16,24 @@ export const createUserController = async(req, res) => {
 }
 
 export const loginController = async (req, res) => {
-  if (!req.body.userName || !req.body.password) {
-    return res
-      .status(400)
-      .json({ message: "Something is missing.", status: false });
-  }
   try {
     const token = await userService.loginUser(
-      req.body.userName,
-      req.body.password
+      req.body
     );
+    console.log(token,"token")
     if (token) {
       res.set("Authorization", `Bearer ${token}`).status(200).json({
         message: "User successfully Logged In.",
         token,
         status: true,
       });
-    } else {
-      res.status(404).json({
-        message: "Username or Password Incorrect..",
-        status: false,
-      });
     }
+    //  else {
+    //   res.status(404).json({
+    //     message: "Email or Password Incorrect..",
+    //     status: false,
+    //   });
+    // }
   } catch (error) {
     res.status(500).json({
       message: getErrorMessage(500, error),
@@ -47,7 +45,6 @@ export const loginController = async (req, res) => {
 export const updateUserInfoController = async (req, res) => {
   try {
     const _id = req.user._id;
-    console.log(_id, '_id')
     const newUserData = {
       userName: req.body.userName,
       description: req.body.description,
@@ -84,3 +81,15 @@ export const getUserProfile = async (req, res) => {
   }
 };
 
+export const googleSignUpHandler = async (req, res) => {
+  try {
+    // const {credential} = req.body
+    // const decoded = jwt.decode(credential);
+
+    // console.log(decoded)
+    // res.json({mess:"success", decoded})
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+}

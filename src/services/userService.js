@@ -29,31 +29,51 @@ async function createUser(data) {
   }
 }
 
-async function loginUser(userName, password) {
+async function loginUser(req) {
   try {
-
-    const user = await User.findOne({
-      userName: userName,
-    });
-    if (!user) {
-      return null; 
+    const {credential} = req
+    const decoded = jwt.decode(credential);
+    const googleUserExist = await User.findOne({email: decoded && decoded.email})
+   
+    if(googleUserExist) {
+      return credential 
     }
-    const passwordChecker = await bcrypt.compare(password, user.password);
-    if (!passwordChecker) {
-      return null; 
-    }
-    const token = jwt.sign(
-      {
-        userName: user.userName,
-        password: user.password,
-        _id: user._id,
-      },
-      'new_web_secret',
-      {
-        expiresIn: "1d",
+    if(googleUserExist === null && decoded) {
+      console.log('inside', "googleUserExist")
+      const googleLoggedUser = new User({
+        userName: decoded.name,
+        email: decoded.email,
+        firstName: decoded.given_name,
+        LastName: decoded.family_name,
+        source: "Google",
+        profilePicture: decoded.picture
+      })
+      await googleLoggedUser.save()
+    } 
+    if(decoded === null) {
+      const user = await User.findOne({
+        email: req.email,
+      });
+      if (!user) {
+        return null; 
       }
-    );
-    return token;
+      const passwordChecker = await bcrypt.compare(req.password, user.password);
+      if (!passwordChecker) {
+        return null; 
+      }
+      const token = jwt.sign(
+        {
+          email: user.email,
+          password: user.password,
+          _id: user._id,
+        },
+        'new_web_secret',
+        {
+          expiresIn: "1d",
+        }
+      );
+      return token;
+    }
   } catch (err) {
     console.log(err);
     throw err;

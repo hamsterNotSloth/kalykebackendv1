@@ -6,9 +6,9 @@ const usersSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    
     password: {
       type: String,
-      required: true,
     },
     email: {
       type: String,
@@ -19,7 +19,13 @@ const usersSchema = new mongoose.Schema(
       type: String,
       default: null
     },
+    firstName: String,
+    LastName: String,
     profilePicture: String,
+    source: {
+      type: String,
+      default: "Email"
+    },
     createdAt: {
       type: Date,
       default: Date.now,

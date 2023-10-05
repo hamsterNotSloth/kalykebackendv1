@@ -2,7 +2,7 @@ const errorMessages = {
   400: "Bad Request: The server could not understand the request due to invalid syntax or missing parameters.",
   401: "Unauthorized: Authentication is required to access this resource. Please provide valid credentials.",
   403: "Forbidden: You do not have permission to access this resource. Please contact the administrator for access.",
-  404: "Not Found: The requested resource could not be found on the server. Please check the URL and try again.",
+  404: "Not Found: The requested resource could not be found on the server. Please check details and try again.",
   500: "Internal Server Error: An unexpected error occurred on the server while processing your request. Please try again later or contact the server administrator for assistance.",
   502: "Bad Gateway: The server received an invalid response from an upstream server while acting as a gateway or proxy.",
   503: "Service Unavailable: The server is currently unable to handle the request due to temporary overloading or maintenance of the server. Please try again later.",

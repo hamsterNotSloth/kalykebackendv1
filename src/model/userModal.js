@@ -6,41 +6,33 @@ const usersSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    
     password: {
       type: String,
-      required: true,
     },
     email: {
       type: String,
       required: true,
       unique: true,
     },
-    firstName: String,
-    lastName: String,
-    role: {
+    description: {
       type: String,
-      required: true,
+      default: null
     },
-    active: {
-      type: Boolean,
-      default: true,
-    },
+    firstName: String,
+    LastName: String,
     profilePicture: String,
+    source: {
+      type: String,
+      default: "Email"
+    },
     createdAt: {
       type: Date,
       default: Date.now,
-    },
-    created_by: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true,
-    },
+    }
   },
   { timestamps: true }
 );
-
-usersSchema.methods.getFullName = function () {
-  return `${this.firstName} ${this.lastName}`;
-};
 
 const User = mongoose.model("User", usersSchema);
 export default User;

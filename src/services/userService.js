@@ -2,15 +2,18 @@ import bcrypt from "bcryptjs";
 import User from "../model/userModal.js";
 import jwt from "jsonwebtoken";
 
+const secret_key = process.env.SECRET_KEY;
+
+
 async function createUser(data) {
-  const { userName, password, role, email } = data;
+  const { userName, password,  email } = data;
   try {
     if (!userName || !email || !password ) {
-      throw new Error("Something is missing.");
+      throw new Error({message: "Something is missing.", status: false});
     }
     const userExists = await User.findOne({ userName });
     if (userExists !== null) {
-      throw new Error("User Already Exists");
+       return ({message: "Username or Email Already Exists.", status: false});
     }
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
@@ -20,38 +23,57 @@ async function createUser(data) {
       password: hashedPassword
     });
     await newUser.save();
-    return { message: "User Successfully created", status: true };
+    return { message: "User Successfully created.", status: true, newUser };
   } catch (error) {
     throw error; 
   }
 }
 
-async function loginUser(userName, password) {
+async function loginUser(req) {
   try {
-
-    const user = await User.findOne({
-      userName: userName,
-    });
-    if (!user) {
-      return null; 
+    const {credential} = req
+    const decoded = jwt.decode(credential);
+    const googleUserExist = await User.findOne({email: decoded && decoded.email})
+   
+    if(googleUserExist) {
+      return credential 
     }
-    const passwordChecker = await bcrypt.compare(password, user.password);
-    if (!passwordChecker) {
-      return null; 
-    }
-    const token = jwt.sign(
-      {
-        userName: user.userName,
-        password: user.password,
-        _id: user._id,
-      },
-      "secret_is_a_secret_for_user",
-      {
-        expiresIn: "1d",
+    if(googleUserExist === null && decoded) {
+      console.log('inside', "googleUserExist")
+      const googleLoggedUser = new User({
+        userName: decoded.name,
+        email: decoded.email,
+        firstName: decoded.given_name,
+        LastName: decoded.family_name,
+        source: "Google",
+        profilePicture: decoded.picture
+      })
+      await googleLoggedUser.save()
+    } 
+    if(decoded === null) {
+      const user = await User.findOne({
+        email: req.email,
+      });
+      if (!user) {
+        return null; 
       }
-    );
-
-    return token;
+      const passwordChecker = await bcrypt.compare(req.password, user.password);
+      if (!passwordChecker) {
+        return null; 
+      }
+      const token = jwt.sign(
+        {
+          email: user.email,
+          password: user.password,
+          _id: user._id,
+        },
+        'new_web_secret',
+        {
+          expiresIn: "1d",
+        }
+      );
+      return token;
+    }
   } catch (err) {
     console.log(err);
     throw err;
@@ -62,17 +84,29 @@ async function updateUser(_id, updatedUserData) {
   try {
     const existingUser = await User.findById(_id);
     if (!existingUser) {
-      return null; 
+      return {message: "User does'nt exist.", status: false}; 
     }
 
     existingUser.userName = updatedUserData.userName;
-    existingUser.role = updatedUserData.role;
+    existingUser.description = updatedUserData.description;
 
     const updatedUser = await existingUser.save();
     return updatedUser; 
   } catch (err) {
-    console.log(err);
     throw err; 
+  }
+}
+
+async function userProfile(_id) {
+  try {
+    const userProfile = await User.findById(_id);
+    if(!userProfile) {
+      throw {message: "Profile not found.", status: false, code: 404};
+    }
+    console.log(userProfile)
+    return userProfile;
+  } catch(err) {
+    throw {message: "Internal Server Error",code: 500, err};
   }
 }
 
@@ -94,5 +128,6 @@ export default {
   createUser,
   loginUser,
   updateUser,
+  userProfile,
   deleteUserById,
 };

@@ -6,26 +6,26 @@ const secret_key = process.env.SECRET_KEY;
 
 
 async function createUser(data) {
-  const { userName, password,  email } = data;
+  const { username, password,  email } = data;
   try {
-    if (!userName || !email || !password ) {
-      throw new Error({message: "Something is missing.", status: false});
+    if (!username || !email || !password ) {
+      return {message: "Something is missing.", status: false};
     }
-    const userExists = await User.findOne({ userName });
+    const userExists = await User.findOne({ username });
     if (userExists !== null) {
        return ({message: "Username or Email Already Exists.", status: false});
     }
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
     const newUser = new User({
-      userName: userName,
+      userName: username,
       email: email,
       password: hashedPassword
     });
     await newUser.save();
     return { message: "User Successfully created.", status: true, newUser };
   } catch (error) {
-    throw error; 
+    return error; 
   }
 }
 
@@ -34,12 +34,10 @@ async function loginUser(req) {
     const {credential} = req
     const decoded = jwt.decode(credential);
     const googleUserExist = await User.findOne({email: decoded && decoded.email})
-   
     if(googleUserExist) {
       return credential 
     }
     if(googleUserExist === null && decoded) {
-      console.log('inside', "googleUserExist")
       const googleLoggedUser = new User({
         userName: decoded.name,
         email: decoded.email,

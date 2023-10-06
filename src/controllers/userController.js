@@ -20,7 +20,6 @@ export const loginController = async (req, res) => {
     const token = await userService.loginUser(
       req.body
     );
-    console.log(token,"token")
     if (token) {
       res.set("Authorization", `Bearer ${token}`).status(200).json({
         message: "User successfully Logged In.",

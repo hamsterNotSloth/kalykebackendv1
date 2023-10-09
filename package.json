@@ -20,6 +20,7 @@
     "google-auth-library": "^9.1.0",
     "jsonwebtoken": "^9.0.1",
     "mongoose": "^7.4.3",
+    "multer": "^1.4.5-lts.1",
     "nodemon": "^3.0.1",
     "socket.io": "^4.7.2"
   }

@@ -2,9 +2,7 @@ import mongoose from "mongoose";
 
 const imagesSchema = new mongoose.Schema(
     {
-        data: Buffer, 
-        contentType: String,
-        originalName: String,
+        downloadLink: String,
     }
 )
 
@@ -13,6 +11,14 @@ const productSchema = new mongoose.Schema(
         images: {
             type: [imagesSchema],
             default: []
+        },
+        title: {
+            type: String,
+            required: true
+        },
+        description: {
+            type: String,
+            default: null
         },
         // created_by: {
         //     type: mongoose.Schema.Types.ObjectId,

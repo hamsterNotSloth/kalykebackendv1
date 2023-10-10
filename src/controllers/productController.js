@@ -17,7 +17,7 @@ export const createProductController = async (req, res) => {
 
 export const getProduct = (req, res) => {
   try {
-
+    // const products = await 
   } catch(error) {
     res.status(500).json({message: "Internal Server Error...", status: false});
   }

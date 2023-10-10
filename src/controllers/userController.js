@@ -15,17 +15,45 @@ export const createUserController = async(req, res) => {
   }
 }
 
+// export const loginController = async (req, res) => {
+//   try {
+//     const token = await userService.loginUser(
+//       req.body
+//     );
+//     if (token) {
+//       res.set("Authorization", `Bearer ${token}`).status(200).json({
+//         message: "User successfully Logged In.",
+//         token,
+//         status: true,
+//       });
+//     }
+//     //  else {
+//     //   res.status(404).json({
+//     //     message: "Email or Password Incorrect..",
+//     //     status: false,
+//     //   });
+//     // }
+//   } catch (error) {
+//     res.status(500).json({
+//       message: getErrorMessage(500, error),
+//       status: false,
+//     });
+//   }
+// };
+
 export const loginController = async (req, res) => {
   try {
     const token = await userService.loginUser(
       req.body
     );
-    if (token) {
+    if (token.status === true) {
       res.set("Authorization", `Bearer ${token}`).status(200).json({
         message: "User successfully Logged In.",
         token,
         status: true,
       });
+    } else {
+      res.status(token.code).json(token)
     }
     //  else {
     //   res.status(404).json({

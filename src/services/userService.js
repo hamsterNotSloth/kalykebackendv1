@@ -6,19 +6,20 @@ const secret_key = process.env.SECRET_KEY;
 
 
 async function createUser(data) {
-  const { username, password,  email } = data;
+  const { username: userName, password,  email } = data;
   try {
-    if (!username || !email || !password ) {
+    console.log(userName,'userName')
+    if (!userName && !email && !password ) {
       return {message: "Something is missing.", status: false};
     }
-    const userExists = await User.findOne({ username });
+    const userExists = await User.findOne({ userName });
     if (userExists !== null) {
-       return ({message: "Username or Email Already Exists.", status: false});
+       return ({message: "userName or Email Already Exists.", status: false});
     }
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
     const newUser = new User({
-      userName: username,
+      userName: userName,
       email: email,
       password: hashedPassword
     });
@@ -52,12 +53,13 @@ async function loginUser(req) {
       const user = await User.findOne({
         email: req.email,
       });
-      if (!user) {
-        return null; 
+      // console.log(user, 'user')
+      if (user == null) {
+        return {message: "Account not found.", status: false, code: 404 }; 
       }
       const passwordChecker = await bcrypt.compare(req.password, user.password);
       if (!passwordChecker) {
-        return null; 
+        return {message: "password or email incorrect.", status: false, code: 400 }; 
       }
       const token = jwt.sign(
         {
@@ -70,7 +72,7 @@ async function loginUser(req) {
           expiresIn: "1d",
         }
       );
-      return token;
+      return {token, status: true};
     }
   } catch (err) {
     console.log(err);

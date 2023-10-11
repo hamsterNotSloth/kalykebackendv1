@@ -10,11 +10,11 @@ async function createUser(data) {
   try {
     console.log(userName,'userName')
     if (!userName && !email && !password ) {
-      return {message: "Something is missing.", status: false};
+      return {message: "Something is missing.", status: false, code: 400};
     }
     const userExists = await User.findOne({ userName });
     if (userExists !== null) {
-       return ({message: "userName or Email Already Exists.", status: false});
+       return ({message: "userName or Email Already Exists.", status: false, code: 404});
     }
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
@@ -24,7 +24,7 @@ async function createUser(data) {
       password: hashedPassword
     });
     await newUser.save();
-    return { message: "User Successfully created.", status: true, newUser };
+    return { message: "User Successfully created.", status: true };
   } catch (error) {
     return error; 
   }
@@ -53,7 +53,6 @@ async function loginUser(req) {
       const user = await User.findOne({
         email: req.email,
       });
-      // console.log(user, 'user')
       if (user == null) {
         return {message: "Account not found.", status: false, code: 404 }; 
       }
@@ -110,6 +109,29 @@ async function userProfile(_id) {
   }
 }
 
+export const resetPassword = async ({token, password}) => {
+  try {
+    const user = await User.findOne({
+      resetToken: token,
+      resetTokenExpiration: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return { message: 'Invalid or expired token.', status: false, code: 400 };
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    user.password = hashedPassword;
+    user.resetToken = null;
+    user.resetTokenExpiration = null;
+    await user.save();
+    return {message: "Password updated Successfully!", status: true}
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Server error.' });
+  }
+}
+
 async function deleteUserById(_id) {
   try {
     const existingUser = await User.findById(_id);
@@ -128,6 +150,7 @@ export default {
   createUser,
   loginUser,
   updateUser,
+  resetPassword,
   userProfile,
   deleteUserById,
 };

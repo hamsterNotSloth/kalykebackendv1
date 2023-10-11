@@ -18,6 +18,12 @@ const usersSchema = new mongoose.Schema(
       type: String,
       default: null
     },
+    resetToken:{
+      type: String,
+    },
+    resetTokenExpiration: {
+      type: Date, 
+    },
     firstName: String,
     LastName: String,
     profilePicture: String,

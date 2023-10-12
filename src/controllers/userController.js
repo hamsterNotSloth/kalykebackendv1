@@ -3,14 +3,12 @@ import User from "../model/userModal.js";
 import userService from "../services/userService.js"
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
-import bcrypt from 'bcryptjs';
-
 
 export const createUserController = async (req, res) => {
   try {
     const result = await userService.createUser(req.body);
 
-    res.status(200).json(result);
+    res.status(result.code).json(result);
   } catch (error) {
     res
       .status(500)
@@ -24,19 +22,13 @@ export const loginController = async (req, res) => {
       req.body
     );
     if (token.status === true) {
-      res.set("Authorization", `Bearer ${token}`).status(200).json({
+      res.set("Authorization", `${token}`).status(200).json({
         message: "User successfully Logged In.",
         token,
       });
     } else {
       res.status(token.code).json(token)
     }
-    //  else {
-    //   res.status(404).json({
-    //     message: "Email or Password Incorrect..",
-    //     status: false,
-    //   });
-    // }
   } catch (error) {
     res.status(500).json({
       message: getErrorMessage(500, error),
@@ -54,27 +46,24 @@ export const resetPasswordRequestController = async (req, res) => {
   try {
     const user = await User.findOne({ email });
 
-    if (!user) {
-      return res.status(404).json({ message: 'User not found.', status: false });
-    }
-    user.resetToken = resetToken;
-    user.resetTokenExpiration = resetTokenExpiration;
-    await user.save();
+    if (user.email === "Email") {
+      user.resetToken = resetToken;
+      user.resetTokenExpiration = resetTokenExpiration;
+      await user.save();
 
-    // Send a reset email to the user
-    const transporter = nodemailer.createTransport({
-      service: 'Yahoo',
-      auth: {
-        user: 'abdul.806@yahoo.com',
-        pass: 'flqfptptnklbahym',
-      },
-    });
+      const transporter = nodemailer.createTransport({
+        service: 'Yahoo',
+        auth: {
+          user: 'abdul.806@yahoo.com',
+          pass: 'flqfptptnklbahym',
+        },
+      });
 
-    const mailOptions = {
-      from: 'abdul.806@yahoo.com',
-      to: email,
-      subject: 'Password Reset Request',
-      html: `
+      const mailOptions = {
+        from: 'abdul.806@yahoo.com',
+        to: email,
+        subject: 'Password Reset Request',
+        html: `
         <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="max-width: 500px; margin: 0 auto; background-color: #ffffff; padding: 20px;">
         <tr>
@@ -105,11 +94,11 @@ export const resetPasswordRequestController = async (req, res) => {
         </table>
     </body>
       `,
-    };
+      };
+      await transporter.sendMail(mailOptions);
+    }
 
-    await transporter.sendMail(mailOptions);
-
-    return res.status(200).json({ message: 'Password reset email sent.', status: true });
+    return res.status(200).json({ message: 'Password reset email sent. Please check your inbox or spam.', status: true });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Server error.', status: false });
@@ -153,7 +142,6 @@ export const updateUserInfoController = async (req, res) => {
       res.status(404).json({ message: "User not found", status: false });
     }
   } catch (error) {
-    console.log(error)
     res.status(500).json({
       message: getErrorMessage(500, error),
     });
@@ -162,13 +150,19 @@ export const updateUserInfoController = async (req, res) => {
 
 export const getUserProfile = async (req, res) => {
   try {
-    const _id = req.user._id;
-    const userProfile = await userService.userProfile(_id)
-    console.log(userProfile, "userProfile")
+    let userProfile;
+    if (req.user.uid !== null) {
+      const uid = req.user.uid;
+      userProfile = await userService.userProfile(uid, "Firebase Login");
+    }
+    else {
+      const _id = req.user._id;
+      userProfile = await userService.userProfile(_id, "Email Login")
+    }
     res.status(200).json({ message: "Userinfo Found", userProfile })
   } catch (error) {
     res.status(error.code).json({
-      message: getErrorMessage(500, error),
+      message: error.message, status: false
     });
   }
 };

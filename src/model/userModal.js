@@ -14,6 +14,10 @@ const usersSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+    uid: {
+      type: String,
+      unique: true
+    },
     description: {
       type: String,
       default: null

@@ -3,7 +3,8 @@ import productService from "../services/productService.js";
 
 
 export const createProductController = async (req, res) => {
-  const {title, description, images} = req.body
+  const {title, description, images} = req.body.productDetails
+  console.log(req.body)
   if(!title || !description){
    return res.status(400).json({message: "Something is missing.", status: false})
   }
@@ -45,7 +46,6 @@ export const getProductController = async(req, res) => {
       return res.status(200).json(response)
     }
   } catch(error) {
-    console.log(error)
     res.status(500).json({message: "Internal Server Error...", status: false});
   }
 };

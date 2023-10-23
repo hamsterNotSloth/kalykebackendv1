@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const imagesSchema = new mongoose.Schema(
     {
         downloadLink: String,
+        refernceLink: String
     }
 )
 

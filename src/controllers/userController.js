@@ -3,11 +3,15 @@ import User from "../model/userModal.js";
 import userService from "../services/userService.js"
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
+import dotenv from "dotenv";
+dotenv.config();
+
+const email_user = process.env.EMAIL;
+const email_pass = process.env.EMAIL_PASS;
 
 export const createUserController = async (req, res) => {
   try {
     const result = await userService.createUser(req.body);
-
     res.status(result.code).json(result);
   } catch (error) {
     res
@@ -54,8 +58,8 @@ export const resetPasswordRequestController = async (req, res) => {
       const transporter = nodemailer.createTransport({
         service: 'Yahoo',
         auth: {
-          user: 'abdul.806@yahoo.com',
-          pass: 'flqfptptnklbahym',
+          user: email_user,
+          pass: email_pass,
         },
       });
 
@@ -100,7 +104,6 @@ export const resetPasswordRequestController = async (req, res) => {
 
     return res.status(200).json({ message: 'Password reset email sent. Please check your inbox or spam.', status: true });
   } catch (error) {
-    console.error(error);
     return res.status(500).json({ message: 'Server error.', status: false });
   }
 }
@@ -118,7 +121,6 @@ export const resetPasswordController = async (req, res) => {
 
     return res.status(200).json(response);
   } catch (error) {
-    console.error(error);
     return res.status(500).json({ message: 'Server error.' });
   }
 }
@@ -151,6 +153,9 @@ export const updateUserInfoController = async (req, res) => {
 export const getUserProfile = async (req, res) => {
   try {
     let userProfile;
+    if(req.user._id == null && req.user.uid == null) {
+      return res.status(400).json({message: "Can't fetch Data.", status: false})
+    }
     if (req.user.uid !== null) {
       const uid = req.user.uid;
       userProfile = await userService.userProfile(uid, "Firebase Login");
@@ -161,8 +166,8 @@ export const getUserProfile = async (req, res) => {
     }
     res.status(200).json({ message: "Userinfo Found", userProfile })
   } catch (error) {
-    res.status(error.code).json({
-      message: error.message, status: false
+    res.status(500).json({
+      message: "Something Went Wrong.", status: false
     });
   }
 };

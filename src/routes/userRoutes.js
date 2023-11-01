@@ -1,7 +1,6 @@
 import { Router } from "express";
 import {
-  createUserController,
-  loginController,
+  signInController,
   updateUserInfoController,
   getUserProfile,
   resetPasswordRequestController,
@@ -10,10 +9,9 @@ import {
 import validateToken from "../../middleware/index.js";
 const userRoutes = Router();
 
-userRoutes.post("/login", loginController);
-userRoutes.post("/createUser", createUserController);
+userRoutes.post("/", signInController);
 userRoutes.patch("/update-user", validateToken, updateUserInfoController);
-userRoutes.get("/user-profile", validateToken, getUserProfile);
+userRoutes.get("/", validateToken, getUserProfile);
 userRoutes.post("/reset-password-request", resetPasswordRequestController);
 userRoutes.post("/reset-password/:token", resetPasswordController);
 

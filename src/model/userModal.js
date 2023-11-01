@@ -1,28 +1,35 @@
 import mongoose from "mongoose";
 
+const socialMediaSchema = new mongoose.Schema(
+  {
+    socialMediaName: String,
+    link: String
+  }
+)
+
 const usersSchema = new mongoose.Schema(
   {
     userName: {
-      type: String,
-      required: true,
-    },
-    password: {
       type: String,
     },
     email: {
       type: String,
       required: true,
-      unique: true,
+      // unique: true,
     },
     u_id: {
       type: String,
-      unique: false,
-      required: false, 
+      unique: true,
+      required: true, 
       default: null,
     },
     description: {
       type: String,
       default: null
+    },
+    socialMedia: {
+      type: [socialMediaSchema],
+      default: []
     },
     resetToken:{
       type: String,

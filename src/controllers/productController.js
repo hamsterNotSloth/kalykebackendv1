@@ -1,24 +1,16 @@
-import Product from "../model/3dModal.js";
+import { getErrorMessage } from "../../errors/errorMessages.js";
 import productService from "../services/productService.js";
 
-
 export const createProductController = async (req, res) => {
-  const {title, description, images} = req.body.productDetails
-  console.log(req.body)
+  const {title, description} = req.body.productDetails
   if(!title || !description){
    return res.status(400).json({message: "Something is missing.", status: false})
   }
   try {
-    const newProduct = new Product({
-      title: title,
-      description: description,
-      images: images,
-      created_by: req.user._id
-    })
-    await newProduct.save();
-    res.status(201).json({message: "Product Successfully Created.", status: true})
+    const response = await productService.createProduct(req.body.productDetails, req.user.email);
+    res.status(201).json(response)
   } catch(err) {
-    res.status(500).json({message: "Internal Server Error...", status: false});
+    res.status(500).json({message: err.message, status: false});
   }
 };
 
@@ -31,11 +23,11 @@ export const deleteProductHandler = async(req, res) => {
     }
     res.status(200).json({message: "Modal Deleted Successfully", status: true});
   } catch(err) {
-    res.status(500).json({message: "Internal Server Error...", status: false});
+    res.status(500).json({message: getErrorMessage(500), status: false});
   }
 };
 
-export const getProductController = async(req, res) => {
+export const getMyProductsController = async(req, res) => {
   try {
     const response = await productService.getMyProducts(req.user)
 
@@ -46,7 +38,7 @@ export const getProductController = async(req, res) => {
       return res.status(200).json(response)
     }
   } catch(error) {
-    res.status(500).json({message: "Internal Server Error...", status: false});
+    res.status(500).json({message: getErrorMessage(500), status: false});
   }
 };
 
@@ -60,27 +52,30 @@ export const getAllProductController = async(req, res) => {
       return res.status(200).json(response)
     }
   } catch(err) {
-    res.status(500).json({message: "Internal Server Error...", status: false})
+    res.status(500).json({message: getErrorMessage(500), status: false})
   }
 }
-// export const productUploaderController = async (req, res) => {
-//     if (!req.file) {
-//       return res.status(400).json({ message: 'No file uploaded.' });
-//     }
-  
-//     const { buffer, mimetype, originalname } = req.file; 
-//     const newProduct = new Product({
-//       data: buffer,
-//       contentType: mimetype,
-//       originalName: originalname,
-//     });
-//     console.log(newProduct,'buffer')
 
-//     try {
-//       await newProduct.save();
-//       res.json({ message: 'File uploaded and saved to MongoDB successfully.', newProduct });
-//     } catch (error) {
-//       console.error('Error saving file to MongoDB:', error);
-//       res.status(500).json({ message: 'An error occurred while saving the file to MongoDB.' });
-//     }
-//   };
+export const getProductController = async(req, res) => {
+  try {
+    const _id = req.params.id
+    const response = await productService.getProduct(_id)
+    res.status(200).json(response)
+  } catch(error) {
+    res.status(500).json({message: getErrorMessage(500), status: false})
+  }
+}
+
+export const downloadImageController = async (req, res) => {
+  const firebaseDownloadUrl = req.body.url;
+  try {
+    if (!firebaseDownloadUrl) {
+      return res.status(400).json({ error: 'Image URL not provided' });
+    }
+
+    res.redirect(firebaseDownloadUrl); 
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal server error');
+  }
+};

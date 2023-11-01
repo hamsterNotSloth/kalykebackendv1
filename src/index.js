@@ -7,7 +7,6 @@ import Routes from "./routes/index.js";
 import { createServer } from "http";
 import  socketServer  from "../config/socket/socket.js";
 
-const PORT = 8000;
 const port = process.env.PORT;
 
 const app = express();

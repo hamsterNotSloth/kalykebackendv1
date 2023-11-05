@@ -1,5 +1,7 @@
+import { bucket } from "../../config/firebase/firebase.js";
 import { getErrorMessage } from "../../errors/errorMessages.js";
 import productService from "../services/productService.js";
+import fs from "fs";
 
 export const createProductController = async (req, res) => {
   const {title, description} = req.body.productDetails
@@ -27,17 +29,19 @@ export const deleteProductHandler = async(req, res) => {
   }
 };
 
-export const getMyProductsController = async(req, res) => {
+export const getUserProductsController = async(req, res) => {
+  const id = req.params.id || req.user.uid
   try {
-    const response = await productService.getMyProducts(req.user)
+    const response = await productService.getMyProducts(id)
 
     if(response.status == false) {
       return res.status(response.code).json({response})
     }
     else {
-      return res.status(200).json(response)
+      return res.status(response.code).json(response)
     }
   } catch(error) {
+    console.log(error,'err')
     res.status(500).json({message: getErrorMessage(500), status: false});
   }
 };
@@ -60,22 +64,8 @@ export const getProductController = async(req, res) => {
   try {
     const _id = req.params.id
     const response = await productService.getProduct(_id)
-    res.status(200).json(response)
+    res.status(response.status).json(response)
   } catch(error) {
-    res.status(500).json({message: getErrorMessage(500), status: false})
+    res.status(500).json({message: getErrorMessage(500), status: false, code: 500})
   }
 }
-
-export const downloadImageController = async (req, res) => {
-  const firebaseDownloadUrl = req.body.url;
-  try {
-    if (!firebaseDownloadUrl) {
-      return res.status(400).json({ error: 'Image URL not provided' });
-    }
-
-    res.redirect(firebaseDownloadUrl); 
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Internal server error');
-  }
-};

@@ -4,12 +4,13 @@ import Product from "../model/3dModal.js";
 import User from "../model/userModal.js";
 
 async function createProduct(data, userRef) {
-  const {title, description, images, modalSetting, category} = data
+  const {title, description, images, modalSetting, category, modal} = data
     try {
         const createProduct = new Product({
             title: title,
             description: description,
             images: images,
+            modal: modal,
             modalSetting: modalSetting,
             category: category,
             created_by: userRef
@@ -36,13 +37,18 @@ async function deleteProduct(_id) {
 
 async function getMyProducts(data) {
     try {
-        const {email: created_by} = data
+        const user = await User.findOne({u_id: data})
+        if(!user){
+            return {message: getErrorMessage(404), code:404, status: false}
+        }
+        const {email: created_by} = user
         const myProducts = await Product.find({ created_by })
         if(!myProducts) {
             return {message: getProductErrorMessage(404), status: false, code: 404}
         }
-        return {myProducts, status: true}
+        return {myProducts, status: true, code: 200}
     } catch(err) {
+        
         return {message: getErrorMessage(500), status: false, code: 500}
     }
 }
@@ -62,13 +68,16 @@ async function getAllProducts() {
 const getProduct = async(_id) => {
     try {
         const product = await Product.findOne({_id})
-        const user = await User.findOne({email: product.created_by})
-        if(!product || !user) {
-            return null
+        if(!product) {
+            return {status: 404, message: getErrorMessage(404)}
         }
-        return {product, user}
+        const user = await User.findOne({email: product.created_by})
+        if(!user) {
+            return {status: 404, message: getErrorMessage(404)}
+        }
+        return {product, user, status: 200}
     } catch(error) {
-        return  {message: getErrorMessage(error.code), status: false, code: error.code}
+        return  {message: getErrorMessage(500), status: false, code: 500}
     }
 }
 

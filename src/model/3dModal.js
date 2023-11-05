@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const imagesSchema = new mongoose.Schema(
+const imagesAndModalSchema = new mongoose.Schema(
     {
         downloadLink: String,
         refernceLink: String
@@ -16,8 +16,12 @@ const tagsSchema = new mongoose.Schema(
 const productSchema = new mongoose.Schema(
     {
         images: {
-            type: [imagesSchema],
+            type: [imagesAndModalSchema],
             default: []
+        },
+        modal: {
+            type: [imagesAndModalSchema],
+            default:[]
         },
         tags: {
             type: [tagsSchema],

@@ -184,13 +184,31 @@ export const updateUserInfoController = async (req, res) => {
 };
 
 export const getUserProfile = async (req, res) => {
+  const id = req.params.id;
+  let authId;
+  if(req.user && req.user.uid) {
+    authId = req.user.uid
+  }
   try {
-    const userProfile = await userService.userProfile(req.user);
-    res.status(200).json({ message: "Userinfo Found", userProfile })
+    const userProfile = await userService.userProfile(id, authId);
+    res.status(userProfile.code).json(userProfile)
   } catch (error) {
+    console.log(error,'error')
     res.status(500).json({
       message: getErrorMessage(500), status: false
     });
   }
 };
 
+export const getMyProfile = async (req, res) => {
+  const email = req.user.email;
+  try {
+    const userProfile = await userService.myProfile(email);
+    res.status(userProfile.code).json(userProfile)
+  } catch (error) {
+    console.log(error,'error')
+    res.status(500).json({
+      message: getErrorMessage(500), status: false
+    });
+  }
+};

@@ -141,14 +141,30 @@ async function updateUser(email, updatedUserData) {
   }
 }
 
-async function userProfile(data) {
+async function userProfile(id, authId) {
   try {
-    const userProfileByUid = await User.findOne({u_id: data.uid}, 'createdAt userName u_id profilePicture');
-    const userProfileByEmail = await User.findOne({email: data.email})
+    const userProfileByUid = await User.findOne({u_id: id}, 'createdAt userName u_id profilePicture');
+    const userProfileByEmail = await User.findOne({email: id}, 'createdAt userName u_id profilePicture')
     if (!userProfileByUid && !userProfileByEmail) {
       return { message: getUserErrorMessage(404), status: false, code: 404 };
     }
-    return !userProfileByUid? userProfileByEmail : userProfileByUid;
+    let permissionGranter = false;
+    if(authId == id) {
+      permissionGranter = true
+    } 
+    return userProfileByEmail?  {message: "Successfully fetched info", permissionGranter, status: true, code: 200, profile: userProfileByEmail} : {message: "Successfully fetched info", permissionGranter, status: true, code: 200, profile: userProfileByUid};
+  } catch (err) {
+    throw { message: getUserErrorMessage(500), code: 500, err };
+  }
+}
+
+async function myProfile(email) {
+  try {
+    const userProfileByEmail = await User.findOne({email: email}, 'createdAt userName u_id profilePicture')
+    if (!userProfileByEmail) {
+      return { message: getUserErrorMessage(404), status: false, code: 404 };
+    }
+    return {message: "Successfully fetched info", status: true, code: 200, myProfile: userProfileByEmail};
   } catch (err) {
     throw { message: getUserErrorMessage(500), code: 500, err };
   }
@@ -196,5 +212,6 @@ export default {
   updateUser,
   resetPassword,
   userProfile,
+  myProfile,
   deleteUserById,
 };

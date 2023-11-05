@@ -17,3 +17,5 @@ export default admin.initializeApp({
   messagingSenderId: messenger_sender_id,
   appId: app_id
 });
+
+export const bucket = admin.storage().bucket();

@@ -7,11 +7,19 @@ const imagesAndModalSchema = new mongoose.Schema(
     }
 )
 
-const tagsSchema = new mongoose.Schema(
-    {
-        tag: "String"
-    }
-)
+
+const userViewSchema = new mongoose.Schema({
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    hasViewed: {
+      type: Boolean,
+      default: false,
+    },
+  });
+  
 
 const productSchema = new mongoose.Schema(
     {
@@ -23,16 +31,13 @@ const productSchema = new mongoose.Schema(
             type: [imagesAndModalSchema],
             default:[]
         },
-        tags: {
-            type: [tagsSchema],
-            default: []
-        },
+        tags: [String],
         category: String,
+        userViews: [userViewSchema],
         title: {
             type: String,
             required: true
         },
-
         description: {
             type: String,
             default: null
@@ -41,6 +46,7 @@ const productSchema = new mongoose.Schema(
             type: String,
             default: null
         },
+        userViews: [userViewSchema],
         created_by: {
             type: String,
             ref: 'User',

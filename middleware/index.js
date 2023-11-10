@@ -9,7 +9,7 @@ const secret_key = process.env.SECRET_KEY;
 function validateToken(req, res, next) {
   const token = req.headers.authorization?.split(" ")[1] || req.query.token;
   if (token === undefined) {
-    return res.status(400).json({ message: getErrorMessage(401) });
+    return res.status(401).json({ message: getErrorMessage(401) });
   }
   admin
     .auth()
@@ -17,6 +17,7 @@ function validateToken(req, res, next) {
     .then((decodedToken) => {
       req.user = decodedToken;
       next();
+      return 
     })
     .catch((error) => {
       console.log(error, "Error While verifying accessToken from firebase")

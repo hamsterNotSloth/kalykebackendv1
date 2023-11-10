@@ -17,6 +17,22 @@ const usersSchema = new mongoose.Schema(
       required: true,
       // unique: true,
     },
+    email_verified: {
+      type: Boolean,
+      default: false
+    },
+    followers: {
+      type: [String],
+      default: []
+    },
+    following: {
+      type: [String],
+      default: []
+    },
+    isPromotionOn: {
+      type: Boolean,
+      default: false
+    },
     u_id: {
       type: String,
       unique: true,
@@ -44,6 +60,7 @@ const usersSchema = new mongoose.Schema(
       type: String,
       default: "Email"
     },
+    
     createdAt: {
       type: Date,
       default: Date.now,

@@ -29,6 +29,18 @@ export const signInController = async (req, res) => {
   }
 };
 
+export const verifyUserController = async (req, res) => {
+  const token = req.params.token;
+
+  try {
+    const response = await userService.verifyUser()
+  } catch(error) {
+    res.status(500).json({
+      message: getErrorMessage(500), status: false
+    });
+  }
+}
+
 export const resetPasswordRequestController = async (req, res) => {
   const { email } = req.body;
 
@@ -92,7 +104,9 @@ export const resetPasswordRequestController = async (req, res) => {
 
     return res.status(200).json({ message: 'Password reset email sent. Please check your inbox or spam.', status: true });
   } catch (error) {
-    return res.status(500).json({ message: 'Server error.', status: false });
+    return res.status(500).json({
+      message: getErrorMessage(500), status: false
+    });
   }
 }
 
@@ -158,11 +172,13 @@ export const resetPasswordController = async (req, res) => {
 }
 
 export const updateUserInfoController = async (req, res) => {
+  console.log(req.body,'req.body.profilePicture')
   try {
     const newUserData = {
       userName: req.body.userName,
       description: req.body.description,
-      socialMedia: req.body.socialMedia
+      socialMedia: req.body.socialMedia,
+      profilePicture: req.body.profilePicture
     };
     const updatedUser = await userService.updateUser(req.user.email, newUserData);
 
@@ -175,26 +191,26 @@ export const updateUserInfoController = async (req, res) => {
     } else {
       res.status(404).json({ message: "User not found", status: false });
     }
+    return 
   } catch (error) {
-    res.status(500).json({
-      message: error.message,
-      status: false
+    return   res.status(500).json({
+      message: getErrorMessage(500), status: false
     });
   }
 };
 
 export const getUserProfile = async (req, res) => {
-  const id = req.params.id;
   let authId;
   if(req.user && req.user.uid) {
     authId = req.user.uid
   }
+  const id = req.params.id;
   try {
     const userProfile = await userService.userProfile(id, authId);
-    res.status(userProfile.code).json(userProfile)
+    return  res.status(userProfile.code).json(userProfile)
   } catch (error) {
     console.log(error,'error')
-    res.status(500).json({
+    return  res.status(500).json({
       message: getErrorMessage(500), status: false
     });
   }
@@ -204,11 +220,39 @@ export const getMyProfile = async (req, res) => {
   const email = req.user.email;
   try {
     const userProfile = await userService.myProfile(email);
-    res.status(userProfile.code).json(userProfile)
+    return  res.status(userProfile.code).json(userProfile)
   } catch (error) {
     console.log(error,'error')
-    res.status(500).json({
+    return   res.status(500).json({
       message: getErrorMessage(500), status: false
     });
   }
 };
+
+export const followController = async (req, res) => {
+  if(!req.user.email || !req.body.email) {
+    return {message: getErrorMessage(404), status: false, code: 404}
+  }
+  const follower_email = req.user.email;
+  const following_email = req.body.email
+  try {
+    const response = await userService.followUser(follower_email, following_email)
+    return   res.status(response.code).json(response)
+  } catch(error) {
+    console.log(error)
+    return   res.status(500).json({
+      message: getErrorMessage(500), status: false
+    });
+  }
+}
+
+export const getPromotedUsersContoller = async(req, res) => {
+  try {
+    const response = await userService.promotedUsers()
+    return   res.status(response.code).json(response)
+  } catch (error) {
+    return   res.status(500).json({
+      message: getErrorMessage(500), status: false
+    });
+  }
+}

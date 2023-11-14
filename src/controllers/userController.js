@@ -33,7 +33,7 @@ export const verifyUserController = async (req, res) => {
   const token = req.params.token;
 
   try {
-    const response = await userService.verifyUser()
+    // const response = await userService.verifyUser()
   } catch(error) {
     res.status(500).json({
       message: getErrorMessage(500), status: false

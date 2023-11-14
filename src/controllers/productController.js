@@ -64,6 +64,7 @@ export const getAllProductController = async (req, res) => {
       return res.status(200).json(response)
     }
   } catch (err) {
+    console.log(err, ':err')
     return res.status(500).json({ message: getErrorMessage(500), status: false })
   }
 }
@@ -96,8 +97,19 @@ export const getSimilarProductsController = async (req, res) => {
 }
 
 export const productViewController = async (req, res) => {
+  if(!req.params || !req.user) {
+    return
+  }
+  if(req.user && !req.user.email) {
+    return
+  }
+  if(req.params && !req.params.id) {
+    return
+  }
+  const productId = req.params.id
+  const userEmail = req.user.email
   try {
-    const response = productService.userView();
+    const response = await productService.userView(userEmail, productId);
     res.status(response.code).json(response)
   } catch (error) {
     console.log(error, 'Error')

@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import User from "../model/userModal.js";
 import { getUserErrorMessage, getUserSuccessMessage } from "../../errors/userErrorMessages.js";
 import { getErrorMessage } from "../../errors/errorMessages.js";
+import Product from "../model/3dModal.js";
 
 async function signIn(req) {
   try {
@@ -25,10 +26,6 @@ async function signIn(req) {
   }
 }
 
-async function verifyUser() {
-
-}
-
 function createUserFromDecoded(decoded) {
   return new User({
     userName: decoded.displayName,
@@ -44,10 +41,10 @@ async function updateUser(email, updatedUserData) {
     // if (existingUser) {
     //   return { message: getUserErrorMessage(404), status: false };
     // }
-    existingUser.userName = updatedUserData.userName;
-    existingUser.description = updatedUserData.description;
-    existingUser.socialMedia = updatedUserData.socialMedia;
-    existingUser.profilePicture = updatedUserData.profilePicture;
+    updatedUserData.userName? existingUser.userName = updatedUserData.userName : null;
+    updatedUserData.description? existingUser.description = updatedUserData.description : null;
+    updatedUserData.socialMedia? existingUser.socialMedia = updatedUserData.socialMedia : null;
+    updatedUserData.profilePicture? existingUser.profilePicture = updatedUserData.profilePicture : null;
 
     const updatedUser = await existingUser.save();
     return updatedUser;
@@ -58,16 +55,21 @@ async function updateUser(email, updatedUserData) {
 
 async function userProfile(id, authId) {
   try {
-    const userProfileByUid = await User.findOne({ u_id: id }, 'createdAt userName u_id profilePicture followers following');
-    const userProfileByEmail = await User.findOne({ email: id }, 'createdAt userName u_id profilePicture followers following')
+    const userProfileByUid = await User.findOne({ u_id: id }, 'createdAt email userName u_id profilePicture followers following description');
+    const userProfileByEmail = await User.findOne({ email: id }, 'createdAt email userName u_id profilePicture followers following description')
     if (!userProfileByUid && !userProfileByEmail) {
       return { message: getUserErrorMessage(404), status: false, code: 404 };
     }
+    let email = userProfileByEmail? userProfileByEmail.email : userProfileByUid.email
+    const productsCreated = await Product.find({created_by: email})
+    const totalProductsViewed = productsCreated.reduce((accumulator, currentItem) => {
+        return accumulator + currentItem.userViews.length;
+    }, 0);
     let permissionGranter = false;
     if (authId == id) {
       permissionGranter = true
     }
-    return userProfileByEmail ? { message: "Success", permissionGranter, status: true, code: 200, profile: userProfileByEmail } : { message: "Successfully fetched info", permissionGranter, status: true, code: 200, profile: userProfileByUid };
+    return userProfileByEmail ? { message: "Success", permissionGranter, status: true, code: 200, profile: userProfileByEmail, views: totalProductsViewed } : { message: "Successfully fetched info", permissionGranter, status: true, code: 200, profile: userProfileByUid, views: totalProductsViewed };
   } catch (err) {
     throw { message: getUserErrorMessage(500), code: 500, err };
   }
@@ -172,6 +174,5 @@ export default {
   myProfile,
   deleteUserById,
   followUser,
-  verifyUser,
   promotedUsers
 };

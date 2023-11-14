@@ -8,19 +8,6 @@ const imagesAndModalSchema = new mongoose.Schema(
 )
 
 
-const userViewSchema = new mongoose.Schema({
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-    },
-    hasViewed: {
-      type: Boolean,
-      default: false,
-    },
-  });
-  
-
 const productSchema = new mongoose.Schema(
     {
         images: {
@@ -33,7 +20,6 @@ const productSchema = new mongoose.Schema(
         },
         tags: [String],
         category: String,
-        userViews: [userViewSchema],
         title: {
             type: String,
             required: true
@@ -46,7 +32,10 @@ const productSchema = new mongoose.Schema(
             type: String,
             default: null
         },
-        userViews: [userViewSchema],
+        userViews: {
+            type: [String],
+            default: []
+        },
         created_by: {
             type: String,
             ref: 'User',

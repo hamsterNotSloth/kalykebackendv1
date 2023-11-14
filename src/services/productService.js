@@ -5,7 +5,6 @@ import User from "../model/userModal.js";
 
 async function createProduct(data, userRef) {
     const { title, description, images, modalSetting, category, modal, tags } = data
-    console.log(tags, 'data data data data')
     try {
         const createProduct = new Product({
             title: title,
@@ -56,20 +55,46 @@ async function getMyProducts(data) {
 }
 
 async function getAllProducts(data) {
-    const {currentFilter} = data
+    const { currentFilter } = data
     try {
         let allProducts;
-        if(currentFilter == 'New Uploads') {
-            allProducts = await Product.find().sort({ uploadTimestamp: -1 });   
+        if (currentFilter == 'New Uploads') {
+            allProducts = await Product.find().sort({ uploadTimestamp: -1 });
         }
-         else {
+        if (currentFilter == "From top users") {
+            const topUsers = await User.find().sort({ followers: -1 });
+            let productsArr = [];
+            for (const user of topUsers.slice(0, 30)) {
+                const products = await Product.find({ created_by: user.email })
+                .limit(1);
+                
+                if (products.length > 0) {
+                    productsArr.push(...products);
+                }
+            }
+            allProducts = productsArr
+        }
+        if(currentFilter == "Trending") {
+            allProducts = await Product.aggregate([
+                {
+                    $addFields: {
+                        userViewsCount: { $size: "$userViews" }
+                    }
+                },
+                {
+                    $sort: { userViewsCount: -1 }
+                }
+            ]);
+        }
+        else {
             allProducts = await Product.find();
-         }
+        }
         if (!allProducts) {
             return { message: getProductErrorMessage(404), status: false, code: 404 }
         }
         return { allProducts, status: true }
     } catch (err) {
+        console.log(err)
         return { message: getErrorMessage(500), status: false, code: 500 }
     }
 }
@@ -81,7 +106,7 @@ const getProduct = async (_id) => {
             return { status: 404, message: getErrorMessage(404) }
         }
         const user = await User.findOne({ email: product.created_by })
-        const totalProducts = await Product.countDocuments({created_by: product.created_by}) 
+        const totalProducts = await Product.countDocuments({ created_by: product.created_by })
         if (!user) {
             return { status: 404, message: getErrorMessage(404) }
         }
@@ -121,7 +146,7 @@ async function getSimilarProducts(tags, created_by) {
 
         const productsFromSameUser = await Product.aggregate([
             { $match: { created_by } },
-            { $sample: { size: 6 } }, 
+            { $sample: { size: 6 } },
         ]);
         if (!similarProducts) {
             return { message: getProductErrorMessage(404), code: 404, status: false }
@@ -133,10 +158,24 @@ async function getSimilarProducts(tags, created_by) {
     }
 }
 
-async function userView(){
+async function userView(userEmail, productId) {
     try {
+        const user = await User.findOne({email: userEmail});
+        if(!user) {
+            return { message: "Success", code: 203, status: true }
+        }
+        const product = await Product.findById(productId);
+        if(!product) {
+            return { message: "Success", code: 203, status: true }
+        }
+        const userView = product.userViews.find(email => email === user.email);
+        if(userView) {
+            return { message: "Success", code: 203, status: true }
+        }
+        product.userViews.push(user.email)
+        await product.save();
         return { message: "Success", code: 200, status: true }
-    } catch(error) {
+    } catch (error) {
         return { message: getErrorMessage(500), status: false, code: 500 }
     }
 }

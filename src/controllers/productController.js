@@ -30,6 +30,14 @@ export const deleteProductHandler = async (req, res) => {
 };
 
 export const getUserProductsController = async (req, res) => {
+  if(!req.user && !req.params) {
+    return;
+  }
+  if (req.user && req.params) {
+    if (!req.user.uid && !req.params.id) {
+      return;
+    }
+  }
   const id = req.params.id || req.user.uid
   try {
     const response = await productService.getMyProducts(id)
@@ -61,28 +69,28 @@ export const getAllProductController = async (req, res) => {
 }
 
 export const getProductController = async (req, res) => {
-  if(!req.params.id) {
+  if (!req.params.id) {
     return res.status(404).json({ message: getErrorMessage(404), status: false, code: 404 })
   }
   try {
     const _id = req.params.id
     const response = await productService.getProduct(_id)
-    return  res.status(response.status).json(response)
+    return res.status(response.status).json(response)
   } catch (error) {
-    return  res.status(500).json({ message: getErrorMessage(500), status: false, code: 500 })
+    return res.status(500).json({ message: getErrorMessage(500), status: false, code: 500 })
   }
 }
 
 export const getSimilarProductsController = async (req, res) => {
-  const {tags, created_by} = req.query;
+  const { tags, created_by } = req.query;
   if (!tags && !created_by) {
     return res.status(404).json({ message: getErrorMessage(404), status: false, code: 404 })
   }
   try {
     const response = await productService.getSimilarProducts(tags.split(','), created_by)
-    return  res.status(response.code).json(response)
+    return res.status(response.code).json(response)
   } catch (error) {
-    console.log(error,'Error')
+    console.log(error, 'Error')
     return res.status(500).json({ message: getErrorMessage(404), status: false, code: 500 })
   }
 }
@@ -91,8 +99,8 @@ export const productViewController = async (req, res) => {
   try {
     const response = productService.userView();
     res.status(response.code).json(response)
-  } catch(error) {
-    console.log(error,'Error')
+  } catch (error) {
+    console.log(error, 'Error')
     return res.status(500).json({ message: getErrorMessage(404), status: false, code: 500 })
   }
 }

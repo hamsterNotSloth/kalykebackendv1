@@ -21,7 +21,6 @@ function permissionGranter(req, res, next) {
     })
     .catch((error) => {
       console.log(error, "Error While verifying accessToken from firebase")
-       res.status(401).json({ message: getErrorMessage(401), status: false });
        req.user = null;
        next();
        return 

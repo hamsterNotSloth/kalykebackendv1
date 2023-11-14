@@ -1,6 +1,5 @@
 import bcrypt from "bcryptjs";
 import User from "../model/userModal.js";
-import jwt from "jsonwebtoken";
 import { getUserErrorMessage, getUserSuccessMessage } from "../../errors/userErrorMessages.js";
 import { getErrorMessage } from "../../errors/errorMessages.js";
 
@@ -68,7 +67,7 @@ async function userProfile(id, authId) {
     if (authId == id) {
       permissionGranter = true
     }
-    return userProfileByEmail ? { message: "Successfully fetched info", permissionGranter, status: true, code: 200, profile: userProfileByEmail } : { message: "Successfully fetched info", permissionGranter, status: true, code: 200, profile: userProfileByUid };
+    return userProfileByEmail ? { message: "Success", permissionGranter, status: true, code: 200, profile: userProfileByEmail } : { message: "Successfully fetched info", permissionGranter, status: true, code: 200, profile: userProfileByUid };
   } catch (err) {
     throw { message: getUserErrorMessage(500), code: 500, err };
   }
@@ -105,7 +104,7 @@ export const resetPassword = async ({ token, password }) => {
     return { message: "Password updated Successfully!", status: true }
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Server error.' });
+    return { message: 'Server error.' };
   }
 }
 

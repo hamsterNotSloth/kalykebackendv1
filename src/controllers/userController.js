@@ -172,7 +172,6 @@ export const resetPasswordController = async (req, res) => {
 }
 
 export const updateUserInfoController = async (req, res) => {
-  console.log(req.body,'req.body.profilePicture')
   try {
     const newUserData = {
       userName: req.body.userName,
@@ -200,7 +199,8 @@ export const updateUserInfoController = async (req, res) => {
 };
 
 export const getUserProfile = async (req, res) => {
-  let authId;
+ 
+  let authId = "is not equal test";
   if(req.user && req.user.uid) {
     authId = req.user.uid
   }
@@ -217,6 +217,12 @@ export const getUserProfile = async (req, res) => {
 };
 
 export const getMyProfile = async (req, res) => {
+  if(!req.user) {
+    return
+  }
+  if(req.user && !req.user.email) {
+    return
+  }
   const email = req.user.email;
   try {
     const userProfile = await userService.myProfile(email);

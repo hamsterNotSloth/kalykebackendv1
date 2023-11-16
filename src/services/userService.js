@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
-import User from "../model/userModal.js";
+import User from "../model/user.js";
 import { getErrorMessage, getSuccessMessage } from "../../errors/errorMessages.js";
-import Product from "../model/3dModal.js";
+import Product from "../model/product.js";
 
 async function signIn(req) {
   try {
@@ -68,7 +68,7 @@ async function userProfile(id, authId) {
     if (authId == id) {
       permissionGranter = true
     }
-    return userProfileByEmail ? { message: "Success", permissionGranter, status: true, code: 200, profile: userProfileByEmail, views: totalProductsViewed } : { message: "Successfully fetched info", permissionGranter, status: true, code: 200, profile: userProfileByUid, views: totalProductsViewed };
+    return userProfileByEmail ? { message: getSuccessMessage(200), permissionGranter, status: true, code: 200, profile: userProfileByEmail, views: totalProductsViewed } : { message: getSuccessMessage(200), permissionGranter, status: true, code: 200, profile: userProfileByUid, views: totalProductsViewed };
   } catch (err) {
     throw { message: getErrorMessage(500), code: 500, err };
   }
@@ -80,7 +80,7 @@ async function myProfile(email) {
     if (!userProfileByEmail) {
       return { message: getErrorMessage(404), status: false, code: 404 };
     }
-    return { message: "Successfully fetched info", status: true, code: 200, myProfile: userProfileByEmail };
+    return { message: getSuccessMessage(200), status: true, code: 200, myProfile: userProfileByEmail };
   } catch (err) {
     return { message: getErrorMessage(500), code: 500, err };
   }
@@ -94,7 +94,7 @@ export const resetPassword = async ({ token, password }) => {
     });
 
     if (!user) {
-      return { message: 'Invalid or expired token.', status: false, code: 400 };
+      return { message: getErrorMessage(403), status: false, code: 400 };
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -105,7 +105,7 @@ export const resetPassword = async ({ token, password }) => {
     return { message: "Password updated Successfully!", status: true }
   } catch (error) {
     console.error(error);
-    return { message: 'Server error.' };
+    return { message: getErrorMessage(500), code: 500, status: false };
   }
 }
 
@@ -148,7 +148,6 @@ async function followUser(follower_email, following_email) {
     return { message: "Follow request successfull", status: true, code: 200 };
 
   } catch (error) {
-    console.log(error, 'error')
     return { message: getErrorMessage(500), status: false, code: 500 };
   }
 }
@@ -159,7 +158,7 @@ async function promotedUsers() {
     if (!promotedUsers) {
       return { message: getSuccessMessage(204), status: true, code: 204 };
     }
-    return { promotedUsers, message: "Success", status: true, code: 200 }
+    return { promotedUsers, message: getErrorMessage(500), status: true, code: 200 }
   } catch (err) {
     return { message: getErrorMessage(500), status: false, code: 500 };
   }

@@ -1,5 +1,5 @@
 import { getErrorMessage, } from "../../errors/errorMessages.js";
-import User from "../model/userModal.js";
+import User from "../model/product.js";
 import userService from "../services/userService.js"
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
@@ -141,7 +141,7 @@ export const updateUserInfo = async (req, res) => {
 
     if (updatedUser) {
       res.status(200).json({
-        message: "User info Updated",
+        message: getSuccessMessage(201),
         status: true,
       });
 

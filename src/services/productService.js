@@ -1,6 +1,7 @@
 import { getErrorMessage, getSuccessMessage } from "../../errors/errorMessages.js";
-import Product from "../model/3dModal.js";
-import User from "../model/userModal.js";
+import { filterEnums } from "../enums/filterEnums.js";
+import Product from "../model/product.js";
+import User from "../model/user.js";
 
 async function createProduct(data, userRef) {
     const { title, description, images, modalSetting, category, modal, tags } = data
@@ -56,11 +57,11 @@ async function getAllProducts(data) {
     const { currentFilter, category } = data;
     try {
         let allProducts;
-
-        if (currentFilter === 'New Uploads') {
+        //filters
+        if (currentFilter === filterEnums.newProducts) {
             const query = category !== "null" ? { category } : {};
             allProducts = await Product.find(query);
-        } else if (currentFilter === "Trending") {
+        } else if (currentFilter === filterEnums.trending) {
             const matchCondition = category !== "null" && category.length >= 0
                 ? { category }
                 : { $or: [{ category: null }, { category: { $exists: false } }] };
@@ -71,7 +72,7 @@ async function getAllProducts(data) {
             ];
 
             allProducts = await Product.aggregate(aggregationPipeline);
-        } else if (currentFilter === "From top users") {
+        } else if (currentFilter === filterEnums.FromtopUsers) {
             const topUsers = await User.aggregate([
                 {
                     $addFields: {
@@ -137,22 +138,6 @@ const getProduct = async (_id) => {
     }
 }
 
-async function downloadImage(link) {
-    try {
-        const response = await fetch(link);
-        if (response.ok) {
-            const imageBuffer = await response.buffer();
-            res.setHeader('Content-Type', response.headers.get('Content-Type'));
-            res.setHeader('Content-Disposition', 'attachment; filename="downloaded_image.jpg"');
-            res.send(imageBuffer);
-        } else {
-            res.status(response.status).send('Failed to download image');
-        }
-    } catch (error) {
-        return { message: getErrorMessage(500), status: false, code: 500 }
-    }
-}
-
 const fetchSimilarProducts = async (tags) => {
     let similarProducts;
     for (let i = 0; i < tags.length; i++) {
@@ -182,19 +167,19 @@ async function userView(userEmail, productId) {
     try {
         const user = await User.findOne({ email: userEmail });
         if (!user) {
-            return { message: "Success", code: 203, status: true }
+            return { message: getSuccessMessage(204), code: 204, status: true }
         }
         const product = await Product.findById(productId);
         if (!product) {
-            return { message: "Success", code: 203, status: true }
+            return { message: getSuccessMessage(204), code: 204, status: true }
         }
         const userView = product.userViews.find(email => email === user.email);
         if (userView) {
-            return { message: "Success", code: 203, status: true }
+            return { message: getSuccessMessage(204), code: 204, status: true }
         }
         product.userViews.push(user.email)
         await product.save();
-        return { message: "Success", code: 200, status: true }
+        return { message: getSuccessMessage(204), code: 204, status: true }
     } catch (error) {
         return { message: getErrorMessage(500), status: false, code: 500 }
     }
@@ -207,6 +192,5 @@ export default {
     getAllProducts,
     getProduct,
     getSimilarProducts,
-    downloadImage,
     userView
 };

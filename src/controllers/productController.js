@@ -55,6 +55,7 @@ export const getUserProductsController = async (req, res) => {
 };
 
 export const getAllProductController = async (req, res) => {
+  console.log(req.query)
   try {
     const response = await productService.getAllProducts(req.query)
     if (response.status == false) {

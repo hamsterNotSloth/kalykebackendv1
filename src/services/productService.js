@@ -55,47 +55,57 @@ async function getMyProducts(data) {
 }
 
 async function getAllProducts(data) {
-    const { currentFilter } = data
+    const { currentFilter, category } = data;
     try {
         let allProducts;
-        if (currentFilter == 'New Uploads') {
-            allProducts = await Product.find().sort({ uploadTimestamp: -1 });
-        }
-        if (currentFilter == "From top users") {
-            const topUsers = await User.find().sort({ followers: -1 });
-            let productsArr = [];
-            for (const user of topUsers.slice(0, 30)) {
-                const products = await Product.find({ created_by: user.email })
-                .limit(1);
-                
-                if (products.length > 0) {
-                    productsArr.push(...products);
-                }
-            }
-            allProducts = productsArr
-        }
-        if(currentFilter == "Trending") {
-            allProducts = await Product.aggregate([
+
+        if (currentFilter === 'New Uploads') {
+            const query = category !== "null" ? { category } : {};
+            allProducts = await Product.find(query);
+        } else if (currentFilter === "Trending") {
+            const matchCondition = category !== "null" && category.length >= 0
+                ? { category }
+                : { $or: [{ category: null }, { category: { $exists: false } }] };
+            const aggregationPipeline = [
+                ...(category === "null" ? [] : [{ $match: matchCondition }]),
+                { $addFields: { userViewsCount: { $size: "$userViews" } } },
+                { $sort: { userViewsCount: -1 } }
+            ];
+
+            allProducts = await Product.aggregate(aggregationPipeline);
+        } else if (currentFilter === "From top users") {
+            const topUsers = await User.aggregate([
                 {
                     $addFields: {
-                        userViewsCount: { $size: "$userViews" }
-                    }
+                        followersCount: { $size: "$followers" },
+                    },
                 },
                 {
-                    $sort: { userViewsCount: -1 }
-                }
+                    $sort: { followersCount: -1 },
+                },
             ]);
+            let productsArr = [];
+            for (const user of topUsers.slice(0, 30)) {
+                const products = await Product.find({created_by: user.email }).limit(1);
+                if (products.length > 0) {
+                    const validProducts = category == "null" 
+                        ? products : products.filter(item => item.category === category && item.created_by === user.email)
+                        console.log(validProducts,'validProducts')
+                    productsArr.push(...validProducts);
+                }
+            }
+
+            allProducts = productsArr;
+        } else {
+            const query = category !== "null" && category.length >= 0 ? { category } : {};
+            allProducts = await Product.find(query);
+            console.log(allProducts)
         }
-        else {
-            allProducts = await Product.find();
-        }
-        if (!allProducts) {
-            return { message: getProductErrorMessage(404), status: false, code: 404 }
-        }
-        return { allProducts, status: true }
+
+        return { allProducts, status: true };
     } catch (err) {
-        console.log(err)
-        return { message: getErrorMessage(500), status: false, code: 500 }
+        console.error(err);
+        return { message: getErrorMessage(500), status: false, code: 500 };
     }
 }
 
@@ -160,16 +170,16 @@ async function getSimilarProducts(tags, created_by) {
 
 async function userView(userEmail, productId) {
     try {
-        const user = await User.findOne({email: userEmail});
-        if(!user) {
+        const user = await User.findOne({ email: userEmail });
+        if (!user) {
             return { message: "Success", code: 203, status: true }
         }
         const product = await Product.findById(productId);
-        if(!product) {
+        if (!product) {
             return { message: "Success", code: 203, status: true }
         }
         const userView = product.userViews.find(email => email === user.email);
-        if(userView) {
+        if (userView) {
             return { message: "Success", code: 203, status: true }
         }
         product.userViews.push(user.email)

@@ -5,13 +5,12 @@ import cors from "cors";
 import connection from "../config/database/connection.js";
 import Routes from "./routes/index.js";
 import { createServer } from "http";
-import  socketServer  from "../config/socket/socket.js";
 
 const port = process.env.PORT;
 
 const app = express();
 const server = createServer(app);
-const io = socketServer(server);
+
 connection();
 
 app.use(cors());

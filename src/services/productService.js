@@ -1,5 +1,4 @@
-import { getErrorMessage } from "../../errors/errorMessages.js";
-import { getProductErrorMessage, getProductSuccessMessage } from "../../errors/productErrorMessages.js";
+import { getErrorMessage, getSuccessMessage } from "../../errors/errorMessages.js";
 import Product from "../model/3dModal.js";
 import User from "../model/userModal.js";
 
@@ -17,9 +16,9 @@ async function createProduct(data, userRef) {
             created_by: userRef
         })
         await createProduct.save();
-        return { message: getProductSuccessMessage(201), status: true }
+        return { message: getSuccessMessage(201), status: true }
     } catch (err) {
-        console.log(err, ' err')
+        return { message: getErrorMessage(500), status: false, code: 500 }
     }
 }
 
@@ -27,7 +26,7 @@ async function deleteProduct(_id) {
     try {
         const myProduct = await Product.findById(_id)
         if (!myProduct) {
-            return { message: getProductErrorMessage(404), status: false, code: 404 }
+            return { message: getErrorMessage(404), status: false, code: 404 }
         }
         await Product.findByIdAndDelete(_id)
         return { status: true }
@@ -45,11 +44,10 @@ async function getMyProducts(data) {
         const { email: created_by } = user
         const myProducts = await Product.find({ created_by })
         if (!myProducts) {
-            return { message: getProductErrorMessage(404), status: false, code: 404 }
+            return { message: getErrorMessage(404), status: false, code: 404 }
         }
         return { myProducts, status: true, code: 200 }
     } catch (err) {
-
         return { message: getErrorMessage(500), status: false, code: 500 }
     }
 }
@@ -86,11 +84,26 @@ async function getAllProducts(data) {
             ]);
             let productsArr = [];
             for (const user of topUsers.slice(0, 30)) {
-                const products = await Product.find({created_by: user.email }).limit(1);
+                const products = await Product.aggregate([
+                    {
+                        $match: {
+                            created_by: user.email
+                        }
+                    },
+                    {
+                        $addFields: {
+                            maxUserViewsLength: { $size: "$userViews" }
+                        }
+                    },
+                    {
+                        $sort: {
+                            maxUserViewsLength: -1
+                        }
+                    }
+                ]);
                 if (products.length > 0) {
-                    const validProducts = category == "null" 
+                    const validProducts = category == "null"
                         ? products : products.filter(item => item.category === category && item.created_by === user.email)
-                        console.log(validProducts,'validProducts')
                     productsArr.push(...validProducts);
                 }
             }
@@ -99,12 +112,10 @@ async function getAllProducts(data) {
         } else {
             const query = category !== "null" && category.length >= 0 ? { category } : {};
             allProducts = await Product.find(query);
-            console.log(allProducts)
         }
 
         return { allProducts, status: true };
     } catch (err) {
-        console.error(err);
         return { message: getErrorMessage(500), status: false, code: 500 };
     }
 }
@@ -159,11 +170,10 @@ async function getSimilarProducts(tags, created_by) {
             { $sample: { size: 6 } },
         ]);
         if (!similarProducts) {
-            return { message: getProductErrorMessage(404), code: 404, status: false }
+            return { message: getErrorMessage(404), code: 404, status: false }
         }
         return { similarProducts, productsFromSameUser, code: 200, status: true }
     } catch (error) {
-        console.log(error, 'Error...')
         return { message: getErrorMessage(500), status: false, code: 500 }
     }
 }

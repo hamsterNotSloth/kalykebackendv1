@@ -7,6 +7,19 @@ const socialMediaSchema = new mongoose.Schema(
   }
 )
 
+const purchaseHistorySchema = new mongoose.Schema(
+  {
+      product: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Product",
+      },
+      purchaseDate: {
+          type: Date,
+          default: Date.now,
+      },
+  },
+)
+
 const usersSchema = new mongoose.Schema(
   {
     userName: {
@@ -15,7 +28,6 @@ const usersSchema = new mongoose.Schema(
     email: {
       type: String,
       required: true,
-      // unique: true,
     },
     email_verified: {
       type: Boolean,
@@ -38,6 +50,10 @@ const usersSchema = new mongoose.Schema(
       unique: true,
       required: true, 
       default: null,
+    },
+    purchaseHistory: {
+      type: [purchaseHistorySchema],
+      default: []
     },
     description: {
       type: String,

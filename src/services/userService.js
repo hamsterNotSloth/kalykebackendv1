@@ -1,7 +1,6 @@
 import bcrypt from "bcryptjs";
 import User from "../model/userModal.js";
-import { getUserErrorMessage, getUserSuccessMessage } from "../../errors/userErrorMessages.js";
-import { getErrorMessage } from "../../errors/errorMessages.js";
+import { getErrorMessage, getSuccessMessage } from "../../errors/errorMessages.js";
 import Product from "../model/3dModal.js";
 
 async function signIn(req) {
@@ -10,19 +9,19 @@ async function signIn(req) {
     const email = decoded.providerData[0].email || "No Email";
     const user = await User.findOne({ email });
     if (!decoded || !decoded.uid || !decoded.providerData || !decoded.providerData[0].email) {
-      return { message: "Something is missing. If error continues contact support.", status: false, code: 404 }
+      return { message: getErrorMessage(404), status: false, code: 404 }
     }
     if (!user) {
       const userData = createUserFromDecoded(decoded)
       await userData.save()
-      return { message: getUserSuccessMessage(201), status: true, code: 201, token: `firebase ${decoded.stsTokenManager.accessToken}` };
+      return { message: getSuccessMessage(201), status: true, code: 201, token: `firebase ${decoded.stsTokenManager.accessToken}` };
     }
     else if (user) {
-      return { message: getUserSuccessMessage(200), status: true, code: 200, token: `firebase ${decoded.stsTokenManager.accessToken}` };
+      return { message: getSuccessMessage(200), status: true, code: 200, token: `firebase ${decoded.stsTokenManager.accessToken}` };
     }
-    return { message: "Invalid request.", status: false, code: 400 };
+    return { message: getErrorMessage(400), status: false, code: 400 };
   } catch (err) {
-    throw err;
+    return { message: getErrorMessage(500), code: 500, err };
   }
 }
 
@@ -49,7 +48,7 @@ async function updateUser(email, updatedUserData) {
     const updatedUser = await existingUser.save();
     return updatedUser;
   } catch (err) {
-    throw err;
+    return { message: getErrorMessage(500), code: 500, err };
   }
 }
 
@@ -58,7 +57,7 @@ async function userProfile(id, authId) {
     const userProfileByUid = await User.findOne({ u_id: id }, 'createdAt email userName u_id profilePicture followers following description');
     const userProfileByEmail = await User.findOne({ email: id }, 'createdAt email userName u_id profilePicture followers following description')
     if (!userProfileByUid && !userProfileByEmail) {
-      return { message: getUserErrorMessage(404), status: false, code: 404 };
+      return { message: getErrorMessage(404), status: false, code: 404 };
     }
     let email = userProfileByEmail? userProfileByEmail.email : userProfileByUid.email
     const productsCreated = await Product.find({created_by: email})
@@ -71,7 +70,7 @@ async function userProfile(id, authId) {
     }
     return userProfileByEmail ? { message: "Success", permissionGranter, status: true, code: 200, profile: userProfileByEmail, views: totalProductsViewed } : { message: "Successfully fetched info", permissionGranter, status: true, code: 200, profile: userProfileByUid, views: totalProductsViewed };
   } catch (err) {
-    throw { message: getUserErrorMessage(500), code: 500, err };
+    throw { message: getErrorMessage(500), code: 500, err };
   }
 }
 
@@ -79,11 +78,11 @@ async function myProfile(email) {
   try {
     const userProfileByEmail = await User.findOne({ email: email }, 'createdAt userName u_id profilePicture followers following')
     if (!userProfileByEmail) {
-      return { message: getUserErrorMessage(404), status: false, code: 404 };
+      return { message: getErrorMessage(404), status: false, code: 404 };
     }
     return { message: "Successfully fetched info", status: true, code: 200, myProfile: userProfileByEmail };
   } catch (err) {
-    return { message: getUserErrorMessage(500), code: 500, err };
+    return { message: getErrorMessage(500), code: 500, err };
   }
 }
 
@@ -158,7 +157,7 @@ async function promotedUsers() {
   try {
     const promotedUsers = await User.find({ isPromotionOn: true })
     if (!promotedUsers) {
-      return { message: getUserSuccessMessage(204), status: true, code: 204 };
+      return { message: getSuccessMessage(204), status: true, code: 204 };
     }
     return { promotedUsers, message: "Success", status: true, code: 200 }
   } catch (err) {

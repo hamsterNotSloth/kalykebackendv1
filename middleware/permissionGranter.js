@@ -1,5 +1,3 @@
-import jwt from "jsonwebtoken";
-import { getErrorMessage } from "../errors/errorMessages.js";
 import admin from "../config/firebase/firebase.js"
 import dotenv from "dotenv";
 dotenv.config();
@@ -25,7 +23,6 @@ function permissionGranter(req, res, next) {
        next();
        return 
     })
-    
 }
 
 export default permissionGranter;

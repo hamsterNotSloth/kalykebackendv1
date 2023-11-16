@@ -1,14 +1,14 @@
 import { Router } from "express";
 import validateToken from "../../middleware/index.js";
-import { createProductController, deleteProductHandler, getAllProductController, getUserProductsController, getProductController, getSimilarProductsController, productViewController } from "../controllers/productController.js";
+import { createProduct, deleteProduct, getAllProduct, getUserProducts, getProduct, getSimilarProducts, productView } from "../controllers/productController.js";
 const productRoutes = Router();
 
-productRoutes.post('/',validateToken, createProductController);
-productRoutes.get('/similar-modals', getSimilarProductsController);
-productRoutes.get('/user-products/:id', getUserProductsController);
-productRoutes.get('/all-products', getAllProductController);
-productRoutes.get('/:id', getProductController);
-productRoutes.delete('/delete-product',validateToken, deleteProductHandler);
-productRoutes.patch('/:id',validateToken, productViewController);
+productRoutes.post('/',validateToken, createProduct);
+productRoutes.get('/similar-modals', getSimilarProducts);
+productRoutes.get('/user-products/:id', getUserProducts);
+productRoutes.get('/all-products', getAllProduct);
+productRoutes.get('/:id', getProduct);
+productRoutes.delete('/delete-product',validateToken, deleteProduct);
+productRoutes.patch('/:id',validateToken, productView);
 
 export default productRoutes;

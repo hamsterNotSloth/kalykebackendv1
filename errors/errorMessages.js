@@ -19,3 +19,8 @@ export const getErrorMessage = (code, error) => {
   let message = errorMessages[code];
   return message ?? error;
 };
+
+export const getSuccessMessage = (code) => {
+  let message = successMessages[code];
+  return message ?? successMessages; 
+}

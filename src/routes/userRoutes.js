@@ -1,25 +1,25 @@
 import { Router } from "express";
 import {
-  signInController,
-  updateUserInfoController,
+  signIn,
+  updateUserInfo,
   getUserProfile,
-  resetPasswordRequestController,
-  resetPasswordController,
+  resetPasswordRequest,
+  resetPassword,
   getMyProfile,
-  followController,
-  getPromotedUsersContoller,
+  follow,
+  getPromotedUsers,
 } from "../controllers/userController.js";
 import validateToken from "../../middleware/index.js";
 import permissionGranter from "../../middleware/permissionGranter.js";
 const userRoutes = Router();
 
-userRoutes.post("/", signInController);
-userRoutes.post("/reset-password-request", resetPasswordRequestController);
-userRoutes.post("/reset-password/:token", resetPasswordController);
+userRoutes.post("/", signIn);
+userRoutes.post("/reset-password-request", resetPasswordRequest);
+userRoutes.post("/reset-password/:token", resetPassword);
 userRoutes.get("/user/my-profile", validateToken, getMyProfile);
 userRoutes.get("/:id", permissionGranter, getUserProfile);
-userRoutes.patch("/update-user", validateToken, updateUserInfoController);
-userRoutes.patch("/follow", validateToken, followController);
-userRoutes.get("/promotion/users",  getPromotedUsersContoller);
+userRoutes.patch("/update-user", validateToken, updateUserInfo);
+userRoutes.patch("/follow", validateToken, follow);
+userRoutes.get("/promotion/users",  getPromotedUsers);
 
 export default userRoutes;

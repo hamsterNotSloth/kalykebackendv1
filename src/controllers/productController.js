@@ -1,9 +1,7 @@
-import { bucket } from "../../config/firebase/firebase.js";
 import { getErrorMessage } from "../../errors/errorMessages.js";
 import productService from "../services/productService.js";
-import fs from "fs";
 
-export const createProductController = async (req, res) => {
+export const createProduct = async (req, res) => {
   const { title, description } = req.body.productDetails
   if (!title || !description) {
     return res.status(400).json({ message: "Something is missing.", status: false })
@@ -16,7 +14,7 @@ export const createProductController = async (req, res) => {
   }
 };
 
-export const deleteProductHandler = async (req, res) => {
+export const deleteProduct = async (req, res) => {
   try {
     const _id = req.body._id
     const response = await productService.deleteProduct(_id);
@@ -29,7 +27,7 @@ export const deleteProductHandler = async (req, res) => {
   }
 };
 
-export const getUserProductsController = async (req, res) => {
+export const getUserProducts = async (req, res) => {
   if(!req.user && !req.params) {
     return;
   }
@@ -49,13 +47,11 @@ export const getUserProductsController = async (req, res) => {
       return res.status(response.code).json(response)
     }
   } catch (error) {
-    console.log(error, 'err')
     res.status(500).json({ message: getErrorMessage(500), status: false });
   }
 };
 
-export const getAllProductController = async (req, res) => {
-  console.log(req.query)
+export const getAllProduct = async (req, res) => {
   try {
     const response = await productService.getAllProducts(req.query)
     if (response.status == false) {
@@ -65,12 +61,12 @@ export const getAllProductController = async (req, res) => {
       return res.status(200).json(response)
     }
   } catch (err) {
-    console.log(err, ':err')
+    console.log(err,'err')
     return res.status(500).json({ message: getErrorMessage(500), status: false })
   }
 }
 
-export const getProductController = async (req, res) => {
+export const getProduct = async (req, res) => {
   if (!req.params.id) {
     return res.status(404).json({ message: getErrorMessage(404), status: false, code: 404 })
   }
@@ -83,7 +79,7 @@ export const getProductController = async (req, res) => {
   }
 }
 
-export const getSimilarProductsController = async (req, res) => {
+export const getSimilarProducts = async (req, res) => {
   const { tags, created_by } = req.query;
   if (!tags && !created_by) {
     return res.status(404).json({ message: getErrorMessage(404), status: false, code: 404 })
@@ -92,12 +88,11 @@ export const getSimilarProductsController = async (req, res) => {
     const response = await productService.getSimilarProducts(tags.split(','), created_by)
     return res.status(response.code).json(response)
   } catch (error) {
-    console.log(error, 'Error')
     return res.status(500).json({ message: getErrorMessage(404), status: false, code: 500 })
   }
 }
 
-export const productViewController = async (req, res) => {
+export const productView = async (req, res) => {
   if(!req.params || !req.user) {
     return
   }
@@ -113,7 +108,6 @@ export const productViewController = async (req, res) => {
     const response = await productService.userView(userEmail, productId);
     res.status(response.code).json(response)
   } catch (error) {
-    console.log(error, 'Error')
     return res.status(500).json({ message: getErrorMessage(404), status: false, code: 500 })
   }
 }

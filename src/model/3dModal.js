@@ -7,6 +7,18 @@ const imagesAndModalSchema = new mongoose.Schema(
     }
 )
 
+const purchaseHistorySchema = new mongoose.Schema(
+    {
+        user: {
+            type: String,
+            ref: "User",
+        },
+        purchaseDate: {
+            type: Date,
+            default: Date.now,
+        },
+    },
+)
 
 const productSchema = new mongoose.Schema(
     {
@@ -16,7 +28,7 @@ const productSchema = new mongoose.Schema(
         },
         modal: {
             type: [imagesAndModalSchema],
-            default:[]
+            default: []
         },
         tags: [String],
         category: String,
@@ -31,6 +43,10 @@ const productSchema = new mongoose.Schema(
         modalSetting: {
             type: String,
             default: null
+        },
+        purchaseHistory: {
+            type: [purchaseHistorySchema],
+            default: []
         },
         userViews: {
             type: [String],

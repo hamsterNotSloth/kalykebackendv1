@@ -9,7 +9,7 @@ import {
   follow,
   getPromotedUsers,
 } from "../controllers/userController.js";
-import validateToken from "../../middleware/index.js";
+import validateToken from "../../middleware/validateToken.js";
 import permissionGranter from "../../middleware/permissionGranter.js";
 const userRoutes = Router();
 

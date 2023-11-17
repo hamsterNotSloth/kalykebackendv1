@@ -57,12 +57,13 @@ async function getAllProducts(data) {
     const { currentFilter, category } = data;
     try {
         let allProducts;
+        const commonCondition = category !== "null";
         //filters
         if (currentFilter === filterEnums.newProducts) {
-            const query = category !== "null" ? { category } : {};
+            const query = commonCondition ? { category } : {};
             allProducts = await Product.find(query);
         } else if (currentFilter === filterEnums.trending) {
-            const matchCondition = category !== "null" && category.length >= 0
+            const matchCondition = commonCondition && category.length >= 0
                 ? { category }
                 : { $or: [{ category: null }, { category: { $exists: false } }] };
             const aggregationPipeline = [
@@ -111,7 +112,7 @@ async function getAllProducts(data) {
 
             allProducts = productsArr;
         } else {
-            const query = category !== "null" && category.length >= 0 ? { category } : {};
+            const query = commonCondition && category.length >= 0 ? { category } : {};
             allProducts = await Product.find(query);
         }
 

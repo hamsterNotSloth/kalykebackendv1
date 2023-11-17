@@ -9,14 +9,14 @@ const socialMediaSchema = new mongoose.Schema(
 
 const purchaseHistorySchema = new mongoose.Schema(
   {
-      product: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Product",
-      },
-      purchaseDate: {
-          type: Date,
-          default: Date.now,
-      },
+    product: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",
+    },
+    purchaseDate: {
+      type: Date,
+      default: Date.now,
+    },
   },
 )
 
@@ -48,7 +48,7 @@ const usersSchema = new mongoose.Schema(
     u_id: {
       type: String,
       unique: true,
-      required: true, 
+      required: true,
       default: null,
     },
     purchaseHistory: {
@@ -63,11 +63,11 @@ const usersSchema = new mongoose.Schema(
       type: [socialMediaSchema],
       default: []
     },
-    resetToken:{
+    resetToken: {
       type: String,
     },
     resetTokenExpiration: {
-      type: Date, 
+      type: Date,
     },
     firstName: String,
     LastName: String,
@@ -76,7 +76,7 @@ const usersSchema = new mongoose.Schema(
       type: String,
       default: "Email"
     },
-    
+
     createdAt: {
       type: Date,
       default: Date.now,

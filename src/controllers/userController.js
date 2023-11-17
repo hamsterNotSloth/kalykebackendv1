@@ -1,4 +1,4 @@
-import { getErrorMessage, } from "../../errors/errorMessages.js";
+import { getErrorMessage, getSuccessMessage, } from "../../errors/errorMessages.js";
 import User from "../model/product.js";
 import userService from "../services/userService.js"
 import nodemailer from 'nodemailer';
@@ -150,6 +150,7 @@ export const updateUserInfo = async (req, res) => {
     }
     return 
   } catch (error) {
+    console.log(error,'error')
     return   res.status(500).json({
       message: getErrorMessage(500), status: false
     });
@@ -158,7 +159,7 @@ export const updateUserInfo = async (req, res) => {
 
 export const getUserProfile = async (req, res) => {
  
-  let authId = "is not equal test";
+  let authId = `is not equal ${Math.random * Date.now()}`;
   if(req.user && req.user.uid) {
     authId = req.user.uid
   }
@@ -167,7 +168,6 @@ export const getUserProfile = async (req, res) => {
     const userProfile = await userService.userProfile(id, authId);
     return  res.status(userProfile.code).json(userProfile)
   } catch (error) {
-    console.log(error,'error')
     return  res.status(500).json({
       message: getErrorMessage(500), status: false
     });
@@ -221,6 +221,7 @@ export const getPromotedUsers = async(req, res) => {
   }
 }
 
+// For now this function is not being used, converting current authentication method to firebase auth
 export const resetPasswordRequest = async (req, res) => {
   const { email } = req.body;
 

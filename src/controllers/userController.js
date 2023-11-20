@@ -213,9 +213,9 @@ export const follow = async (req, res) => {
 export const getPromotedUsers = async(req, res) => {
   try {
     const response = await userService.promotedUsers()
-    return   res.status(response.code).json(response)
+    return res.status(response.code).json(response)
   } catch (error) {
-    return   res.status(500).json({
+    return res.status(500).json({
       message: getErrorMessage(500), status: false
     });
   }

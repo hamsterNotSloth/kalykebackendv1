@@ -186,6 +186,16 @@ async function userView(userEmail, productId) {
     }
 }
 
+async function searchedProducts(data) {
+    try {
+        const products = await Product.find({ title: { $regex: data, $options: 'i' } })
+        return {products, code:200}
+    } catch(error) {
+        console.log(error)
+        return { message: getErrorMessage(500), status: false, code: 500 }
+    }
+}
+
 export default {
     createProduct,
     getMyProducts,
@@ -193,5 +203,6 @@ export default {
     getAllProducts,
     getProduct,
     getSimilarProducts,
-    userView
+    userView,
+    searchedProducts
 };

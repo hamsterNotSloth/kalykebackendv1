@@ -20,7 +20,7 @@ function validateToken(req, res, next) {
     .catch((error) => {
       console.log(error.message, "Error While verifying accessToken from firebase")
       if(error.message.includes("Firebase ID token has expired.")) {
-        return res.status(401).json({ message: "Login status has expired, please login again, it's for your own account safety:)", status: false });
+        return res.status(401).json({ message: "Login status has expired, please login again:)", status: false });
       }
       return res.status(401).json({ message: getErrorMessage(401), status: false });
     });

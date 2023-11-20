@@ -158,7 +158,7 @@ async function promotedUsers() {
     if (!promotedUsers) {
       return { message: getSuccessMessage(204), status: true, code: 204 };
     }
-    return { promotedUsers, message: getErrorMessage(500), status: true, code: 200 }
+    return { promotedUsers, message: getErrorMessage(200), status: true, code: 200 }
   } catch (err) {
     return { message: getErrorMessage(500), status: false, code: 500 };
   }

@@ -111,3 +111,18 @@ export const productView = async (req, res) => {
     return res.status(500).json({ message: getErrorMessage(404), status: false, code: 500 })
   }
 }
+
+export const getAllSearchedProducts = async(req, res) => {
+  if(req.query.products.length == 0) {
+    return res.status(204).json({products: [], status: true, code: 204}) 
+  }
+  try{
+    const response = await productService.searchedProducts(req.query.products)
+    res.status(response.code).json(response)
+
+  } catch(error) {
+    return res.status(500).json({
+      message: getErrorMessage(500), status: false
+    });
+  }
+}

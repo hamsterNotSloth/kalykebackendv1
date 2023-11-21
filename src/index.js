@@ -21,11 +21,11 @@ app.use(cors({
 })); // todo
 app.use(json());
 app.use(urlencoded({ extended: true }));
+app.use("/api", Routes);
+app.use(express.static('public'));
 const _dirname = path.dirname("")
 const buildPath = path.join(_dirname  , "../kalykefrontendv1/build");
 app.use(express.static(buildPath))
-app.use("/api", Routes);
-app.use(express.static('public'));
 
 app.get("/*", function(req, res){
 // const test = path.join(__dirname, "../kalykefrontendv1/build/index.html")

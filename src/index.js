@@ -15,7 +15,10 @@ const app = express();
 const server = createServer(app);
 
 connection();
-app.use(cors());
+app.use(cors({
+  origin: 'http://16.16.68.156', // Allow requests from this origin
+  credentials: true, // Allow credentials like cookies to be sent with the request
+}));
 app.use(json());
 app.use(urlencoded({ extended: true }));
 const _dirname = path.dirname("")

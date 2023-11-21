@@ -10,6 +10,7 @@ const email_user = process.env.EMAIL;
 const email_pass = process.env.EMAIL_PASS;
 
 export const signIn = async (req, res) => {
+  return res.status(200).json(req.body, 'req.bodyreq.body')
   try {
     const userData = await userService.signIn(
       req.body

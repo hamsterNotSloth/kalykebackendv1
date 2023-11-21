@@ -15,14 +15,13 @@ const app = express();
 const server = createServer(app);
 
 connection();
-
+app.use(cors());
+app.use(json());
+app.use(urlencoded({ extended: true }));
 const _dirname = path.dirname("")
 const buildPath = path.join(_dirname  , "../kalykefrontendv1/build");
 app.use(express.static(buildPath))
 app.use("/api", Routes);
-app.use(cors());
-app.use(json());
-app.use(urlencoded({ extended: true }));
 app.use(express.static('public'));
 
 app.get("/*", function(req, res){

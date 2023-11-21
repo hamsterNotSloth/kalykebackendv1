@@ -1,4 +1,4 @@
-import dotenv from "dotenv";
+import dotenv from "dotenv"; 
 dotenv.config();
 import express, { json, urlencoded } from "express";
 import cors from "cors";
@@ -18,12 +18,16 @@ connection();
 
 const _dirname = path.dirname("")
 const buildPath = path.join(_dirname  , "../kalykefrontendv1/build");
-console.log(buildPath,' buildPathbuildPath')
 app.use(express.static(buildPath))
+app.use("/api", Routes);
+app.use(cors());
+app.use(json());
+app.use(urlencoded({ extended: true }));
+app.use(express.static('public'));
 
 app.get("/*", function(req, res){
-const test = path.join(__dirname, "../kalykefrontendv1/build/index.html")
-console.log(test) 
+// const test = path.join(__dirname, "../kalykefrontendv1/build/index.html")
+// console.log(test) 
   res.sendFile(
       path.join(__dirname, "../../kalykefrontendv1/build/index.html"),
       function (err) {
@@ -35,11 +39,6 @@ console.log(test)
 
 })
 
-app.use(cors());
-app.use(json());
-app.use(urlencoded({ extended: true }));
-app.use("/api", Routes);
-app.use(express.static('public'));
 
 server.listen(port, () => {
   console.log(`Listening to ${port}`);

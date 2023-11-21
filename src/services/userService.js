@@ -4,6 +4,7 @@ import { getErrorMessage, getSuccessMessage } from "../../errors/errorMessages.j
 import Product from "../model/product.js";
 
 async function signIn(req) {
+  console.log(req.body)
   try {
     const { credential: decoded } = req;
     const email = decoded.providerData[0].email || "No Email";
@@ -21,6 +22,7 @@ async function signIn(req) {
     }
     return { message: getErrorMessage(400), status: false, code: 400 };
   } catch (err) {
+    console.log(err, ':;:::')
     return { message: getErrorMessage(500), code: 500, err };
   }
 }

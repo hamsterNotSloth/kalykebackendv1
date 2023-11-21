@@ -22,7 +22,7 @@ export const signIn = async (req, res) => {
       res.status(userData.code).json(userData)
     }
   } catch (error) {
-    console.log(error)
+    console.log(error, 'errorerror')
     res.status(500).json({
       message: getErrorMessage(500, error),
       status: false,

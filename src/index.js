@@ -18,7 +18,7 @@ connection();
 app.use(cors({
   origin: 'http://16.16.68.156', // Allow requests from this origin
   credentials: true, // Allow credentials like cookies to be sent with the request
-}));
+})); // todo
 app.use(json());
 app.use(urlencoded({ extended: true }));
 const _dirname = path.dirname("")
@@ -42,6 +42,6 @@ app.get("/*", function(req, res){
 })
 
 
-server.listen(port, () => {
-  console.log(`Listening to ${port}`);
+server.listen(port, '0.0.0.0',() => {
+  console.log(`Server running on http://0.0.0.0:${port}`);
 });

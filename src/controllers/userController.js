@@ -221,6 +221,10 @@ export const getPromotedUsers = async(req, res) => {
   }
 }
 
+export const serverHealthCheck = async(req, res) => {
+  res.status(200).json("Hello world from the server!")
+}
+
 // For now this function is not being used, converting current authentication method to firebase auth
 export const resetPasswordRequest = async (req, res) => {
   const { email } = req.body;

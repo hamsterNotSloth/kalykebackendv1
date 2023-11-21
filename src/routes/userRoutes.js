@@ -8,6 +8,7 @@ import {
   getMyProfile,
   follow,
   getPromotedUsers,
+  serverHealthCheck,
 } from "../controllers/userController.js";
 import validateToken from "../../middleware/validateToken.js";
 import permissionGranter from "../../middleware/permissionGranter.js";
@@ -21,5 +22,6 @@ userRoutes.get("/:id", permissionGranter, getUserProfile);
 userRoutes.patch("/update-user", validateToken, updateUserInfo);
 userRoutes.patch("/follow", validateToken, follow);
 userRoutes.get("/promotion/users",  getPromotedUsers);
+userRoutes.get("/health/status", serverHealthCheck)
 
 export default userRoutes;

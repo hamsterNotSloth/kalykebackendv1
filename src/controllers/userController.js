@@ -17,6 +17,7 @@ export const signIn = async (req, res) => {
     const userData = await userService.signIn(
       req.body
     );
+    console.log(userData, 'userDatauserData')
     if (userData.status === true) {
      return res.status(200).json({
         userData

@@ -12,7 +12,7 @@ const email_pass = process.env.EMAIL_PASS;
 export const signIn = async (req, res) => {
   console.log(req.body, 'body')
   if(req && !req.body) {
-    return res.status(400).json({message: getErrorMessage(400), status: false, code: 400})
+    return res.status(400).json({message: getErrorMessage(400), status: false, code: 400, data: req?.body})
   }
   try {
     const userData = await userService.signIn(
@@ -26,7 +26,7 @@ export const signIn = async (req, res) => {
       }
       return res.status(userData.code).json({ message: getErrorMessage(userData.code), status: false, code: userData.code })
     }
-    return res.status(400).json({ message: getErrorMessage(400), status: false, code: 400 })
+    return res.status(400).json({ message: getErrorMessage(400), status: false, code: 400, userData })
   } catch (error) {
     console.log(error, 'errorerror')
     res.status(500).json({

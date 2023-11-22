@@ -7,7 +7,7 @@ async function signIn(req) {
   try {
     const { credential: decoded } = req;
     if (!decoded || !decoded.uid || !decoded.providerData || !decoded.providerData[0] || !decoded.providerData[0].email) {
-      return { message: getErrorMessage(400), status: false, code: 400 }
+      return { message: getErrorMessage(400), status: false, code: 400, decoded }
     }
     const email = decoded.providerData[0].email || "No Email";
     const user = await User.findOne({ email });

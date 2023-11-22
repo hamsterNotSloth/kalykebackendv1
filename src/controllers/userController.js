@@ -10,6 +10,7 @@ const email_user = process.env.EMAIL;
 const email_pass = process.env.EMAIL_PASS;
 
 export const signIn = async (req, res) => {
+  console.log(req.body, 'req', req)
   if(req && !req.body) {
     return res.status(400).json({message: getErrorMessage(400), status: false, code: 400})
   }

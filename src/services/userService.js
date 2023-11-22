@@ -6,7 +6,7 @@ import Product from "../model/product.js";
 async function signIn(req) {
   try {
     const { credential: decoded } = req;
-    if (!decoded || !decoded.uid || !decoded.providerData || !decoded.providerData[0].email) {
+    if (!decoded || !decoded.uid || !decoded.providerData || !decoded.providerData[0] || !decoded.providerData[0].email) {
       return { message: getErrorMessage(400), status: false, code: 400 }
     }
     const email = decoded.providerData[0].email || "No Email";

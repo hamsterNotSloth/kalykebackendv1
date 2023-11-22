@@ -16,7 +16,7 @@ const server = createServer(app);
 
 connection();
 app.use(cors({
-  origin: 'http://16.16.68.156', // Allow requests from this origin
+  origin: 'http://51.20.92.140', // Allow requests from this origin
   credentials: true, // Allow credentials like cookies to be sent with the request
 })); // todo
 app.use(json());

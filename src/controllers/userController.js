@@ -23,7 +23,7 @@ export const signIn = async (req, res) => {
         userData
       });
     } else {
-      res.status(userData.code).json(userData)
+      res.status(400).json({message: getErrorMessage(400), status: false, code: 400})
     }
   } catch (error) {
     console.log(error, 'errorerror')

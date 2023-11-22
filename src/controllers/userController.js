@@ -19,12 +19,11 @@ export const signIn = async (req, res) => {
       req.body
     );
     if (userData.status === true) {
-      res.status(200).json({
+     return res.status(200).json({
         userData
       });
-    } else {
-      res.status(400).json({message: getErrorMessage(400), status: false, code: 400})
-    }
+    } 
+    return res.status(400).json({message: getErrorMessage(400), status: false, code: 400})
   } catch (error) {
     console.log(error, 'errorerror')
     res.status(500).json({

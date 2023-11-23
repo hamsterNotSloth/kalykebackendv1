@@ -15,10 +15,12 @@ const app = express();
 const server = createServer(app);
 
 connection();
-app.use(cors({
-  origin: 'http://51.20.92.140', // Allow requests from this origin
-  credentials: true, // Allow credentials like cookies to be sent with the request
-})); // todo
+app.use(cors(
+  {
+  origin: 'http://51.20.92.140', 
+  credentials: true,
+}
+)); // todo
 app.use(json());
 app.use(urlencoded({ extended: true }));
 app.use("/api", Routes);
@@ -28,8 +30,6 @@ const buildPath = path.join(_dirname  , "../kalykefrontendv1/build");
 app.use(express.static(buildPath))
 
 app.get("/*", function(req, res){
-// const test = path.join(__dirname, "../kalykefrontendv1/build/index.html")
-// console.log(test) 
   res.sendFile(
       path.join(__dirname, "../../kalykefrontendv1/build/index.html"),
       function (err) {

@@ -20,6 +20,19 @@ const purchaseHistorySchema = new mongoose.Schema(
     },
 )
 
+const commentSchema = new mongoose.Schema({
+    user: {
+      type: String,
+      ref: "User",
+    },
+    text: String,
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+  });
+  
+
 const productSchema = new mongoose.Schema(
     {
         images: {
@@ -39,6 +52,10 @@ const productSchema = new mongoose.Schema(
         description: {
             type: String,
             default: null
+        },
+        comments: {
+          type: [commentSchema], 
+          default: [],
         },
         modalSetting: {
             type: String,

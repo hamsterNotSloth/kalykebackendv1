@@ -23,15 +23,19 @@ async function createProduct(data, userRef) {
     }
 }
 
-async function deleteProduct(_id) {
+async function deleteProduct(_id, user) {
     try {
         const myProduct = await Product.findById(_id)
+        if (myProduct && myProduct.created_by != user) {
+            return { message: getErrorMessage(403), status: false, code: 401 }
+        }
         if (!myProduct) {
             return { message: getErrorMessage(404), status: false, code: 404 }
         }
         await Product.findByIdAndDelete(_id)
         return { status: true }
     } catch (err) {
+        console.log(err, 'err')
         return { message: getErrorMessage(500), status: false, code: 500 }
     }
 }
@@ -116,7 +120,7 @@ async function getAllProducts(data) {
             allProducts = await Product.find(query);
         }
 
-        return { allProducts, status: true };
+        return { allProducts, status: true, code: 200 };
     } catch (err) {
         return { message: getErrorMessage(500), status: false, code: 500 };
     }
@@ -189,9 +193,48 @@ async function userView(userEmail, productId) {
 async function searchedProducts(data) {
     try {
         const products = await Product.find({ title: { $regex: data, $options: 'i' } })
-        return {products, code:200}
-    } catch(error) {
+        return { products, code: 200 }
+    } catch (error) {
         console.log(error)
+        return { message: getErrorMessage(500), status: false, code: 500 }
+    }
+}
+
+async function addComments(data) {
+    const { comment, user, productId } = data
+    try {
+        const product = await Product.findById(productId);
+        if (!product) {
+            return res.status(404).json({ message: getErrorMessage(400), status: false, code: 400 });
+        }
+        const newComment = { user, text: comment };
+        product.comments.push(newComment);
+        await product.save();
+        return { message: "Success.", status: true, code: 201 }
+    } catch (error) {
+        return { message: getErrorMessage(500), status: false, code: 500 }
+    }
+}
+
+async function deleteComment(data) {
+    const { user, commentId, productId } = data
+    try {
+        const product = await Product.findById(productId);
+        if (!product) {
+            return { message: getErrorMessage(400), status: false, code: 400 };
+        }
+        if (product && product.created_by != user) {
+            return { message: getErrorMessage(403), status: false, code: 401 }
+        }
+        const comment = product.comments.id(commentId);
+        if (!comment) {
+            return { message: 'Comment not found', status: 404 };
+        }
+        product.comments.pull(commentId);
+        await product.save();
+        return { status: true, code: 204, message: "Success" }
+    } catch (error) {
+        console.log(error, 'service')
         return { message: getErrorMessage(500), status: false, code: 500 }
     }
 }
@@ -204,5 +247,7 @@ export default {
     getProduct,
     getSimilarProducts,
     userView,
-    searchedProducts
+    searchedProducts,
+    addComments,
+    deleteComment
 };

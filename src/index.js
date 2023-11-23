@@ -16,10 +16,10 @@ const server = createServer(app);
 
 connection();
 app.use(cors(
-  {
-  origin: 'http://51.20.92.140', 
-  credentials: true,
-}
+//   {
+//   origin: 'http://51.20.92.140', 
+//   credentials: true,
+// }
 )); // todo
 app.use(json());
 app.use(urlencoded({ extended: true }));

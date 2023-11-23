@@ -223,18 +223,17 @@ async function deleteComment(data) {
         if (!product) {
             return { message: getErrorMessage(400), status: false, code: 400 };
         }
-        if (product && product.created_by != user) {
-            return { message: getErrorMessage(403), status: false, code: 401 }
-        }
         const comment = product.comments.id(commentId);
         if (!comment) {
-            return { message: 'Comment not found', status: 404 };
+            return { message: 'Comment not found', code:404, status: false };
+        }
+        if (comment.user != user) {
+            return { message: getErrorMessage(403), status: false, code: 401 }
         }
         product.comments.pull(commentId);
         await product.save();
         return { status: true, code: 204, message: "Success" }
     } catch (error) {
-        console.log(error, 'service')
         return { message: getErrorMessage(500), status: false, code: 500 }
     }
 }

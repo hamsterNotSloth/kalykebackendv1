@@ -7,20 +7,27 @@ const imagesAndModalSchema = new mongoose.Schema(
     }
 )
 
-const purchaseHistorySchema = new mongoose.Schema(
-    {
-        user: {
-            type: String,
-            ref: "User",
-        },
-        purchaseDate: {
-            type: Date,
-            default: Date.now,
-        },
+const purchaseHistorySchema = new mongoose.Schema({
+    user: {
+      type: String,
+      ref: "User",
     },
-)
+    email: {
+      type: String,
+      unique: true,
+      required: true,
+    },
+    purchaseDate: {
+      type: Date,
+      default: Date.now,
+    },
+  });
 
 const commentSchema = new mongoose.Schema({
+  profilePic: {
+    type: String,
+    ref: "User",
+  },
     user: {
       type: String,
       ref: "User",
@@ -52,6 +59,14 @@ const productSchema = new mongoose.Schema(
         description: {
             type: String,
             default: null
+        },
+        rating: {
+            type: Number,
+            default: 0
+        },
+        likes: {
+            type: [String],
+            default: []
         },
         comments: {
           type: [commentSchema], 

@@ -61,15 +61,22 @@ async function userProfile(id, authId) {
       return { message: getErrorMessage(404), status: false, code: 404 };
     }
     let email = userProfileByEmail? userProfileByEmail.email : userProfileByUid.email
+    console.log(userProfileByUid,'userProfileByUid')
     const productsCreated = await Product.find({created_by: email})
     const totalProductsViewed = productsCreated.reduce((accumulator, currentItem) => {
         return accumulator + currentItem.userViews.length;
     }, 0);
+    const totalDownloads = productsCreated.reduce((accumulator, currentItem) => {
+      return accumulator + currentItem.purchaseHistory.length;
+  }, 0);
+  const totalComments = productsCreated.reduce((accumulator, currentItem) => {
+    return accumulator + currentItem.comments.length;
+}, 0);
     let permissionGranter = false;
     if (authId == id) {
       permissionGranter = true
     }
-    return userProfileByEmail ? { message: getSuccessMessage(200), permissionGranter, status: true, code: 200, profile: userProfileByEmail, views: totalProductsViewed } : { message: getSuccessMessage(200), permissionGranter, status: true, code: 200, profile: userProfileByUid, views: totalProductsViewed };
+    return userProfileByEmail ? { message: getSuccessMessage(200), permissionGranter, totalComments, totalDownloads, status: true, code: 200, profile: userProfileByEmail, views: totalProductsViewed } : { message: getSuccessMessage(200), permissionGranter, totalComments, totalDownloads, status: true, code: 200, profile: userProfileByUid, views: totalProductsViewed };
   } catch (err) {
     throw { message: getErrorMessage(500), code: 500, err };
   }
@@ -77,7 +84,7 @@ async function userProfile(id, authId) {
 
 async function myProfile(email) {
   try {
-    const userProfileByEmail = await User.findOne({ email: email }, 'createdAt userName u_id profilePicture followers following')
+    const userProfileByEmail = await User.findOne({ email: email }, 'createdAt email userName u_id profilePicture followers following')
     if (!userProfileByEmail) {
       return { message: getErrorMessage(404), status: false, code: 404 };
     }

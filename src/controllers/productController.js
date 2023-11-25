@@ -28,7 +28,7 @@ export const deleteProduct = async (req, res) => {
     if (response.status === false) {
       return res.status(response.code).json(response);
     }
-    res.status(200).json({ message: "Modal Deleted Successfully", status: true });
+    res.status(200).json({ message: "Model Deleted Successfully", status: true });
   } catch (err) {
     console.log(err)
     res.status(500).json({ message: getErrorMessage(500), status: false });
@@ -143,13 +143,11 @@ export const addComments = async(req, res) => {
     return res.status(400).json({ message: getErrorMessage(400), status: false, code: 400 })
   }
   const comment = req.body.comment
-  const user = req.user.email
   const productId = req.params.productId
   try {
-    const response = await productService.addComments({comment, user, productId})
+    const response = await productService.addComments({comment, user:req.user, productId})
     res.status(response.code).json(response)
   } catch(error) {
-    
     return res.status(500).json({
       message: getErrorMessage(500), status: false
     });
@@ -172,9 +170,29 @@ export const deleteComment = async(req, res) => {
     res.status(response.code).json(response)
   } catch(error) {
     
-    console.log(error, 'contro')
     return res.status(500).json({
       message: getErrorMessage(500), status: false
     });
+  }
+}
+
+export const productPurchase = async(req, res) => {
+  console.log(req.params,'req.params')
+
+  if(!req.user || !req.params) {
+    return res.status(400).json({ message: getErrorMessage(400), status: false, code: 400 })
+  }
+
+  const { productId } = req.params;
+  const { email } = req.user;
+
+  try {
+    const updatedProduct = await productService.addPurchase(
+      productId,
+      email
+    );
+    res.status(200).json(updatedProduct);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 }

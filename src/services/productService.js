@@ -75,9 +75,20 @@ async function getAllProducts(data) {
                 { $addFields: { userViewsCount: { $size: "$userViews" } } },
                 { $sort: { userViewsCount: -1 } }
             ];
-
             allProducts = await Product.aggregate(aggregationPipeline);
-        } else if (currentFilter === filterEnums.FromtopUsers) {
+        } 
+        else if(currentFilter === filterEnums.mostDownload) {
+            const aggregationPipeline = [
+                {
+                    $addFields: {
+                        downloadCount: { $size: "$purchaseHistory" }
+                    }
+                },
+                { $sort: { downloadCount: -1 } }
+            ];
+            allProducts = await Product.aggregate(aggregationPipeline);
+        }
+        else if (currentFilter === filterEnums.FromtopUsers) {
             const topUsers = await User.aggregate([
                 {
                     $addFields: {
@@ -207,11 +218,16 @@ async function addComments(data) {
         if (!product) {
             return res.status(404).json({ message: getErrorMessage(400), status: false, code: 400 });
         }
-        const newComment = { user, text: comment };
+        const currentUser = await User.findOne({ email: user.email })
+        if (!currentUser) {
+            return res.status(404).json({ message: getErrorMessage(400), status: false, code: 400 });
+        }
+        const newComment = { profilePic: currentUser.profilePicture, user: currentUser.email, text: comment };
         product.comments.push(newComment);
         await product.save();
         return { message: "Success.", status: true, code: 201 }
     } catch (error) {
+    console.log(error, ';error')
         return { message: getErrorMessage(500), status: false, code: 500 }
     }
 }
@@ -225,7 +241,7 @@ async function deleteComment(data) {
         }
         const comment = product.comments.id(commentId);
         if (!comment) {
-            return { message: 'Comment not found', code:404, status: false };
+            return { message: 'Comment not found', code: 404, status: false };
         }
         if (comment.user != user) {
             return { message: getErrorMessage(403), status: false, code: 401 }
@@ -238,6 +254,35 @@ async function deleteComment(data) {
     }
 }
 
+const addPurchase = async (productId, email) => {
+    try {
+        const product = await Product.findById(productId);
+
+        if (!product) {
+            return { message: getErrorMessage(404), status: false, code: 404 }
+        }
+
+        const existingPurchase = product.purchaseHistory.find(
+            (purchase) => purchase.email === email
+        );
+
+        if (existingPurchase) {
+            return { message: 'User has already purchased this product', code: 204, status: true };
+        }
+
+        product.purchaseHistory.push({
+            email,
+            purchaseDate: new Date(),
+        });
+
+        await product.save();
+
+        return { code: 200, status: true };
+    } catch (error) {
+        throw new Error(`Error adding purchase: ${error.message}`);
+    }
+};
+
 export default {
     createProduct,
     getMyProducts,
@@ -248,5 +293,6 @@ export default {
     userView,
     searchedProducts,
     addComments,
-    deleteComment
+    deleteComment,
+    addPurchase
 };

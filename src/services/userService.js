@@ -61,7 +61,6 @@ async function userProfile(id, authId) {
       return { message: getErrorMessage(404), status: false, code: 404 };
     }
     let email = userProfileByEmail? userProfileByEmail.email : userProfileByUid.email
-    console.log(userProfileByUid,'userProfileByUid')
     const productsCreated = await Product.find({created_by: email})
     const totalProductsViewed = productsCreated.reduce((accumulator, currentItem) => {
         return accumulator + currentItem.userViews.length;

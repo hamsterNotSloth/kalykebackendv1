@@ -23,7 +23,40 @@ const purchaseHistorySchema = new mongoose.Schema({
     },
   });
 
+  const replySchema = new mongoose.Schema({
+    userName: {
+      type: String,
+      ref: "User",
+    },
+    u_id: {
+      type: String,
+      ref: "Product",
+    },
+    profilePic: {
+      type: String,
+      ref: "User",
+    },
+    user: {
+      type: String,
+      ref: "User",
+    },
+    text: String,
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+  });
+
+  
 const commentSchema = new mongoose.Schema({
+  userName: {
+    type: String,
+    ref: "User",
+  },
+  u_id: {
+    type: String,
+    ref: "Product",
+  },
   profilePic: {
     type: String,
     ref: "User",
@@ -37,6 +70,7 @@ const commentSchema = new mongoose.Schema({
       type: Date,
       default: Date.now,
     },
+    replies: [replySchema],
   });
   
 

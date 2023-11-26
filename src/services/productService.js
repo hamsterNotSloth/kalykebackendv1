@@ -219,18 +219,93 @@ async function addComments(data) {
             return res.status(404).json({ message: getErrorMessage(400), status: false, code: 400 });
         }
         const currentUser = await User.findOne({ email: user.email })
+        console.log(currentUser,'currentUser')
         if (!currentUser) {
             return res.status(404).json({ message: getErrorMessage(400), status: false, code: 400 });
         }
-        const newComment = { profilePic: currentUser.profilePicture, user: currentUser.email, text: comment };
+        const newComment = { userName: currentUser.userName, u_id: currentUser.u_id ,profilePic: currentUser.profilePicture, user: currentUser.email, text: comment };
         product.comments.push(newComment);
         await product.save();
         return { message: "Success.", status: true, code: 201 }
     } catch (error) {
-    console.log(error, ';error')
         return { message: getErrorMessage(500), status: false, code: 500 }
     }
 }
+
+async function addReply(data) {
+    const { commentId, reply, user, productId } = data;
+    try {
+      const product = await Product.findById(productId);
+      if (!product) {
+        return { message: getErrorMessage(404), status: false, code: 404 };
+      }
+  
+      const comment = product.comments.id(commentId);
+  
+      if (!comment) {
+        return { message: getErrorMessage(404), status: false, code: 404 };
+      }
+  
+      const currentUser = await User.findOne({ email: user.email });
+  
+      if (!currentUser) {
+        return { message: getErrorMessage(404), status: false, code: 404 };
+      }
+  
+      const newReply = {
+        userName: currentUser.userName,
+        u_id: currentUser.u_id,
+        profilePic: currentUser.profilePicture,
+        user: currentUser.email,
+        text: reply,
+      };
+  
+      comment.replies.push(newReply);
+      await product.save();
+  
+      return { message: "Success.", status: true, code: 201 };
+    } catch (error) {
+      return { message: getErrorMessage(500), status: false, code: 500 };
+    }
+}
+
+async function deleteReply(data) {
+    const { commentId, replyId, user, productId } = data;
+  
+    try {
+      const product = await Product.findById(productId);
+  
+      if (!product) {
+        return { message: getErrorMessage(404), status: false, code: 404 };
+      }
+  
+      const comment = product.comments.id(commentId);
+  
+      if (!comment) {
+        return { message: getErrorMessage(404), status: false, code: 404 };
+      }
+  
+      const reply = comment.replies.id(replyId);
+  
+      if (!reply) {
+        return { message: getErrorMessage(404), status: false, code: 404 };
+      }
+  
+      if (reply.user !== user.email) {
+        return { message: "Unauthorized", status: false, code: 403 };
+      }
+  
+      comment.replies.pull(reply);
+  
+      await product.save();
+  
+      return { message: "Success.", status: true, code: 200 };
+    } catch (error) {
+      console.error(error);
+      return { message: getErrorMessage(500), status: false, code: 500 };
+    }
+  }
+  
 
 async function deleteComment(data) {
     const { user, commentId, productId } = data
@@ -244,7 +319,7 @@ async function deleteComment(data) {
             return { message: 'Comment not found', code: 404, status: false };
         }
         if (comment.user != user) {
-            return { message: getErrorMessage(403), status: false, code: 401 }
+            return { message: 'Unauthorized', status: false, code: 403 }
         }
         product.comments.pull(commentId);
         await product.save();
@@ -294,5 +369,7 @@ export default {
     searchedProducts,
     addComments,
     deleteComment,
-    addPurchase
+    addPurchase,
+    addReply,
+    deleteReply
 };

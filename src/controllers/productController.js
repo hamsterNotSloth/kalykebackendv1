@@ -148,11 +148,61 @@ export const addComments = async(req, res) => {
     const response = await productService.addComments({comment, user:req.user, productId})
     res.status(response.code).json(response)
   } catch(error) {
+    console.log(error,':::error:::')
     return res.status(500).json({
       message: getErrorMessage(500), status: false
     });
   }
 }
+
+export const addReply = async (req, res) => {
+  if (!req.body || !req.user || !req.params) {
+    return res.status(400).json({ message: getErrorMessage(400), status: false, code: 400 });
+  }
+
+  if (!req.body.reply || !req.user.email || !req.params.productId || !req.params.commentId) {
+    return res.status(400).json({ message: getErrorMessage(400), status: false, code: 400 });
+  }
+
+  const reply = req.body.reply;
+  const productId = req.params.productId;
+  const commentId = req.params.commentId;
+
+  try {
+    const response = await productService.addReply({ reply, user: req.user, productId, commentId });
+    res.status(response.code).json(response);
+  } catch (error) {
+    console.log(error, ":::error:::");
+    return res.status(500).json({
+      message: getErrorMessage(500),
+      status: false,
+    });
+  }
+};
+
+export const deleteReply = async (req, res) => {
+  if (!req.params || !req.params.productId || !req.params.commentId || !req.params.replyId || !req.user) {
+    return res.status(400).json({ message: getErrorMessage(400), status: false, code: 400 });
+  }
+
+  const productId = req.params.productId;
+  const commentId = req.params.commentId;
+  const replyId = req.params.replyId;
+  const user = req.user;
+
+  try {
+    const response = await productService.deleteReply({ productId, commentId, replyId, user });
+
+    if (response.status) {
+      res.status(response.code).json({ message: response.message, status: true });
+    } else {
+      res.status(response.code).json({ message: response.message, status: false });
+    }
+  } catch (error) {
+    console.log(error, "At controller")
+    return res.status(500).json({ message: getErrorMessage(500), status: false });
+  }
+};
 
 export const deleteComment = async(req, res) => {
   if(!req.user || !req.params) {

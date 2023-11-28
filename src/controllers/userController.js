@@ -10,8 +10,8 @@ const email_user = process.env.EMAIL;
 const email_pass = process.env.EMAIL_PASS;
 
 export const signIn = async (req, res) => {
-  if(req && !req.body) {
-    return res.status(400).json({message: getErrorMessage(400), status: false, code: 400})
+  if (req && !req.body) {
+    return res.status(400).json({ message: getErrorMessage(400), status: false, code: 400 })
   }
   try {
     const userData = await userService.signIn(
@@ -123,7 +123,6 @@ export const resetPassword = async (req, res) => {
 
   try {
     const response = await userService.resetPassword({ token, password })
-
     if (response.status == false) {
       return res.status(response.code).json(response);
     }
@@ -143,9 +142,9 @@ export const updateUserInfo = async (req, res) => {
       profilePicture: req.body.profilePicture
     };
     const updatedUser = await userService.updateUser(req.user.email, newUserData);
-
+    console.log(updatedUser, 'updatedUser')
     if (updatedUser) {
-      res.status(200).json({
+      res.status(updatedUser.code).json({
         message: getSuccessMessage(201),
         status: true,
       });
@@ -163,7 +162,6 @@ export const updateUserInfo = async (req, res) => {
 };
 
 export const getUserProfile = async (req, res) => {
-
   let authId = `is not equal ${Math.random * Date.now()}`;
   if (req.user && req.user.uid) {
     authId = req.user.uid
@@ -173,6 +171,7 @@ export const getUserProfile = async (req, res) => {
     const userProfile = await userService.userProfile(id, authId);
     return res.status(userProfile.code).json(userProfile)
   } catch (error) {
+    console.log(error, 'error')
     return res.status(500).json({
       message: getErrorMessage(500), status: false
     });
@@ -228,6 +227,46 @@ export const getPromotedUsers = async (req, res) => {
 
 export const serverHealthCheck = async (req, res) => {
   res.status(200).json("Hello world from the server!")
+}
+
+export const wishList = async (req, res) => {
+  if (req.body && !req.body.productId) {
+    return res.status(400).json({
+      message: getErrorMessage(400), status: false
+    });
+  }
+  if (req.user && !req.user.email) {
+    return res.status(400).json({
+      message: getErrorMessage(400), status: false
+    });
+  }
+  const productId = req.body.productId;
+  const userEmail = req.user.email
+  try {
+    const response = await userService.wishList({ productId, userEmail })
+    return res.status(response.code).json(response)
+  } catch (error) {
+    return res.status(500).json({
+      message: getErrorMessage(500), status: false
+    });
+  }
+}
+
+export const getWishListItems = async (req, res) => {
+  if(req.user && !req.user.email) {
+    return res.status(400).json({
+      message: getErrorMessage(400), status: false
+    });
+  }
+  const userEmail = req.user.email
+  try {
+    const response = await userService.getWishListItems(userEmail)
+    return res.status(response.code).json(response)
+  } catch (error) {
+    return res.status(500).json({
+      message: getErrorMessage(500), status: false
+    });
+  }
 }
 
 // For now this function is not being used, converting current authentication method to firebase auth

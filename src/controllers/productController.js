@@ -76,7 +76,7 @@ export const getAllProduct = async (req, res) => {
 
 export const getProduct = async (req, res) => {
   if (!req.params.id) {
-    return res.status(404).json({ message: getErrorMessage(404), status: false, code: 404 })
+    return res.status(400).json({ message: getErrorMessage(400), status: false, code: 400 })
   }
   try {
     const _id = req.params.id
@@ -148,7 +148,6 @@ export const addComments = async(req, res) => {
     const response = await productService.addComments({comment, user:req.user, productId})
     res.status(response.code).json(response)
   } catch(error) {
-    console.log(error,':::error:::')
     return res.status(500).json({
       message: getErrorMessage(500), status: false
     });
@@ -172,7 +171,6 @@ export const addReply = async (req, res) => {
     const response = await productService.addReply({ reply, user: req.user, productId, commentId });
     res.status(response.code).json(response);
   } catch (error) {
-    console.log(error, ":::error:::");
     return res.status(500).json({
       message: getErrorMessage(500),
       status: false,
@@ -227,8 +225,6 @@ export const deleteComment = async(req, res) => {
 }
 
 export const productPurchase = async(req, res) => {
-  console.log(req.params,'req.params')
-
   if(!req.user || !req.params) {
     return res.status(400).json({ message: getErrorMessage(400), status: false, code: 400 })
   }

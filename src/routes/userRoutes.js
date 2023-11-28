@@ -9,6 +9,8 @@ import {
   follow,
   getPromotedUsers,
   serverHealthCheck,
+  wishList,
+  getWishListItems,
 } from "../controllers/userController.js";
 import validateToken from "../../middleware/validateToken.js";
 import permissionGranter from "../../middleware/permissionGranter.js";
@@ -23,5 +25,7 @@ userRoutes.patch("/update-user", validateToken, updateUserInfo);
 userRoutes.patch("/follow", validateToken, follow);
 userRoutes.get("/promotion/users",  getPromotedUsers);
 userRoutes.get("/health/status", serverHealthCheck)
+userRoutes.post("/wishlist", validateToken, wishList)
+userRoutes.get("/wishlist/products", validateToken, getWishListItems)
 
 export default userRoutes;

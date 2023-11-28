@@ -1,6 +1,6 @@
 export const filterEnums = {
     newProducts: "New Uploads",
-    trending: "Trending",
+    trending: "Most Viewed",
     mostDownload: "Most Downloaded",
     FromtopUsers: "From top users"
 }

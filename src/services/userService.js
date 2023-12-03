@@ -294,7 +294,6 @@ async function getWishListItems(userEmail) {
       const productData = doc.data();
       products.push(productData);
     });
-console.log(products,'products')
     return {message: "Success", status: true, code: 201, products};
 
   } catch (err) {

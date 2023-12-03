@@ -142,7 +142,6 @@ export const updateUserInfo = async (req, res) => {
       profilePicture: req.body.profilePicture
     };
     const updatedUser = await userService.updateUser(req.user.email, newUserData);
-    console.log(updatedUser, 'updatedUser')
     if (updatedUser) {
       res.status(updatedUser.code).json({
         message: getSuccessMessage(201),

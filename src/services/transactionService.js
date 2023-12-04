@@ -2,21 +2,15 @@ import { db } from '../../config/firebase/firebase.js';
 import stripe from 'stripe';
 const stripeInstance = stripe('sk_test_51OI4miLzxkeRIY0ySCCTWfE931dpYKJoi1wtWVVLAAXxMOuGueBBTyoTMxTnOv1jeWhU88Iu2N7PoGfXDdmObKY700i1ZzRIRM');
 
-const createPaymentIntent = async (email) => {
-
+const createPaymentIntent = async (email, amount, _id) => {
     const userData = await db.collection('users').where('email', '==', email).get();
     if (userData.empty) {
         return { message: getErrorMessage(404), status: false, code: 404 };
     }
-    const stripeUserId = userData.docs[0].data().stripeUserId;
-    // const paymentIntent = await stripeInstance.paymentIntents.create({
-    //     amount,
-    //     currency: 'usd',
-    //     application_fee_amount: calculateApplicationFee(amount),
-    //     transfer_data: {
-    //         destination: stripeUserId,
-    //     },
-    // });
+    const minimumAmount = 0.5;
+    const adjustedAmount = Math.max(amount, minimumAmount);
+    const user = userData.docs[0].data();
+    const plateformPercentage = (10 / 100) * amount;
     const session = await stripeInstance.checkout.sessions.create({
         payment_method_types: ['card'],
         line_items: [
@@ -24,52 +18,43 @@ const createPaymentIntent = async (email) => {
                 price_data: {
                     currency: 'usd',
                     product_data: {
-                        name: "New 3d model",
+                        name: "3d Model",
                     },
-                    unit_amount: 10000,
+                    unit_amount: adjustedAmount * 100,
                 },
                 quantity: 1,
             },
         ],
         mode: 'payment',
         payment_intent_data: {
-            application_fee_amount: 1000,
+            application_fee_amount: plateformPercentage,
             transfer_data: {
-                destination: 'acct_1OJ941PrdvuEPXd8',
+                destination: user.stripeUserId,
+            },
+            metadata: {
+                productId: _id,
+                buyerEmail: email
             },
         },
-        success_url: 'http://localhost:3000/success',
+        success_url: `http://localhost:3000/messages/success?productId=${_id}`,
         cancel_url: 'http://localhost:3000/cancel',
     });
 
-
-    console.log(session, 'paymentIntent.client_secret')
     return session;
-};
-
-const calculateApplicationFee = (amount) => {
-    return Math.floor(amount * 0.1);
 };
 
 const createStripeUser = async (email, accountId) => {
     try {
-        const user = await stripeInstance.accounts.create({
-            type: 'express',
-            capabilities: {
-              card_payments: { requested: true },
-              transfers: { requested: true },
-            },
-        });
-        await saveUserIdInFirestore(accountId, user.id);
-
+        const userRaw = await db.collection('users').where('email', '==', email).get();
+        const userData = userRaw.docs[0].data()
         const accountLink = await stripeInstance.accountLinks.create({
-            account: user.id,
+            account: userData.stripeUserId,
             refresh_url: 'http://localhost:3000/new/test/refersh',
-            return_url: 'http://localhost:3000/user/Z6vz2U4nJsa67tJebw8zl038Y6O2',
+            return_url: `http://localhost:3000/user/${userData.u_id}`,
             type: 'account_onboarding',
-          });
-          console.log(accountLink, ':accountLink:')
-
+        });
+        const updatedAccount = await stripeInstance.accounts.retrieve(userData.stripeUserId);
+        console.log(updatedAccount.charges_enabled, 'tessst')
         return accountLink.url;
     } catch (error) {
         console.error('Error creating Stripe user:', error.message);
@@ -77,38 +62,7 @@ const createStripeUser = async (email, accountId) => {
     }
 };
 
-const saveUserIdInFirestore = async (accountId, stripeUserId) => {
-    console.log(stripeUserId, 'stripeUserId')
-    const userRef = db.collection('users').doc(accountId);
-    await userRef.set({
-        stripeUserId: stripeUserId,
-    }, { merge: true });
-
-    console.log(`Saved Stripe user ID ${stripeUserId}.`);
-};
-
-const associatePayoutDetails = async (accountId) => {
-    try {
-        await stripeInstance.accounts.update(accountId, {
-            external_account: {
-                object: 'bank_account',
-                country: 'US',
-                currency: 'usd',
-                account_holder_name: 'John Doe',
-                account_holder_type: 'individual',
-                routing_number: '110000000',
-                account_number: '000123456789',
-            },
-        });
-        console.log(`Payout details associated with account ${accountId}`);
-    } catch (error) {
-        console.error('Error associating payout details:', error.message);
-        throw error;
-    }
-};
-
 export default {
     createPaymentIntent,
     createStripeUser,
-    associatePayoutDetails
 };

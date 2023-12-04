@@ -6,12 +6,15 @@ import User from "../model/user.js";
 import { v4 as uuidv4 } from 'uuid';
 
 async function createProduct(data, userRef) {
-  const { title, description, images, modalSetting, category, modal, tags } = data;
-
+  const { title, description, images, modalSetting, category, modal, tags, price } = data;
+  console.log(price,'price')
   try {
     const productsCollection = db.collection('products');
     const _id = uuidv4();
-
+    let free = true
+    if(price != 0) {
+      free = false
+    }
     await productsCollection.add({
       title,
       description,
@@ -23,6 +26,8 @@ async function createProduct(data, userRef) {
       category,
       createdAt: Date.now(),
       created_by: userRef,
+      price: price,
+      free
     });
 
     return { message: getSuccessMessage(201), status: true };

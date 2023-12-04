@@ -4,6 +4,8 @@ import { getErrorMessage, getSuccessMessage } from "../../errors/errorMessages.j
 import Product from "../model/product.js";
 import { db } from "../../config/firebase/firebase.js";
 import { v4 as uuidv4 } from 'uuid';
+import stripe from 'stripe';
+const stripeInstance = stripe('sk_test_51OI4miLzxkeRIY0ySCCTWfE931dpYKJoi1wtWVVLAAXxMOuGueBBTyoTMxTnOv1jeWhU88Iu2N7PoGfXDdmObKY700i1ZzRIRM')
 
 async function signIn(req) {
   try {
@@ -19,7 +21,14 @@ async function signIn(req) {
     if (userQuery.empty) {
       const userData = createUserFromDecoded(decoded);
       await db.collection('users').doc(decoded.uid).set(userData);
-      
+      const user = await stripeInstance.accounts.create({
+        type: 'express',
+        capabilities: {
+          card_payments: { requested: true },
+          transfers: { requested: true },
+        },
+    });
+    await saveUserIdInFirestore(decoded.uid, user.id);
       return { message: getSuccessMessage(201), status: true, code: 201, token: `firebase ${decoded.stsTokenManager.accessToken}` };
     } else {
       return { message: getSuccessMessage(200), status: true, code: 200, token: `firebase ${decoded.stsTokenManager.accessToken}` };
@@ -28,6 +37,15 @@ async function signIn(req) {
     return { message: getErrorMessage(500), code: 500, err };
   }
 }
+
+async function saveUserIdInFirestore(accountId, stripeUserId) {
+  const userRef = db.collection('users').doc(accountId);
+  await userRef.set({
+      stripeUserId: stripeUserId,
+  }, { merge: true });
+
+  console.log(`Saved Stripe user ID ${stripeUserId}.`);
+};
 
 function createUserFromDecoded(decoded) {
   return {

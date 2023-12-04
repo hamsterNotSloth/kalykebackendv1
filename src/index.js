@@ -1,12 +1,13 @@
 import dotenv from "dotenv"; 
 dotenv.config();
-import express, { json, urlencoded } from "express";
+import express, { json, raw, urlencoded } from "express";
 import cors from "cors";
 import connection from "../config/database/connection.js";
 import Routes from "./routes/index.js";
 import { createServer } from "http";
 import path from "path";
 import { fileURLToPath } from "url";
+import { webHooks } from "./controllers/transactionController.js";
 const __filename = fileURLToPath(import.meta.url); 
 const __dirname = path.dirname(__filename)
 const port = process.env.PORT;
@@ -21,6 +22,7 @@ app.use(cors(
   credentials: true,
 }
 )); // todo
+app.use("/webhook", express.raw({type: 'application/json'}), webHooks);
 app.use(json());
 app.use(urlencoded({ extended: true }));
 app.use("/api", Routes);
@@ -38,7 +40,6 @@ app.get("/*", function(req, res){
         }
       }
     );
-
 })
 
 

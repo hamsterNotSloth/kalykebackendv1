@@ -7,10 +7,10 @@ export const createProduct = async (req, res) => {
     return res.status(400).json({ message: getErrorMessage(400), status: false })
   }
   try {
-    const response = await productService.createProduct(req.body.productDetails, req.user.email);
+    const response = await productService.createProduct(req.body.productDetails, req.user);
     res.status(201).json(response)
   } catch (err) {
-    res.status(500).json({ message: err.message, status: false });
+    res.status(err.code || 500).json({ message: err.message, status: false });
   }
 };
 
@@ -88,12 +88,12 @@ export const getProduct = async (req, res) => {
 }
 
 export const getSimilarProducts = async (req, res) => {
-  const { tags, created_by } = req.query;
-  if (!tags && !created_by) {
+  const { tags, createdby } = req.query;
+  if (!tags && !createdby) {
     return res.status(404).json({ message: getErrorMessage(404), status: false, code: 404 })
   }
   try {
-    const response = await productService.getSimilarProducts(tags.split(','), created_by)
+    const response = await productService.getSimilarProducts(tags.split(','), createdby)
     return res.status(response.code).json(response)
   } catch (error) {
     return res.status(500).json({ message: getErrorMessage(404), status: false, code: 500 })
@@ -242,3 +242,4 @@ export const productPurchase = async(req, res) => {
     res.status(500).json({ error: error.message });
   }
 }
+

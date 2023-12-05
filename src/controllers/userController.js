@@ -268,6 +268,20 @@ export const getWishListItems = async (req, res) => {
   }
 }
 
+export const getUserDownloadableItems = async(req, res) => {
+  const {email} = req.user
+  
+  try {
+    const response = await userService.getDownloadableItems(
+      email
+    );
+    res.status(200).json(response);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
+
 // For now this function is not being used, converting current authentication method to firebase auth
 export const resetPasswordRequest = async (req, res) => {
   const { email } = req.body;

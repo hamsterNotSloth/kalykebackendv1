@@ -7,7 +7,6 @@ import { v4 as uuidv4 } from 'uuid';
 
 async function createProduct(data, userRef) {
   const { title, description, images, modalSetting, category, modal, tags, price } = data;
-  console.log(price,'price')
   try {
     const productsCollection = db.collection('products');
     const _id = uuidv4();
@@ -25,7 +24,8 @@ async function createProduct(data, userRef) {
       modalSetting,
       category,
       createdAt: Date.now(),
-      created_by: userRef,
+      created_by: userRef.email,
+      u_id: userRef.uid,
       price: price,
       free
     });
@@ -49,7 +49,7 @@ async function getMyProducts(data) {
     const userData = userDoc.data();
     const { email: created_by } = userData;
 
-    const productsSnapshot = await db.collection('products').where('created_by', '==', created_by).get();
+    const productsSnapshot = await db.collection('products').where('created_by', '==', created_by).orderBy('createdAt', 'desc').get();
 
     if (productsSnapshot.empty) {
       return { message: getErrorMessage(404), status: false, code: 404 };
@@ -89,8 +89,10 @@ async function deleteProduct(_id, user) {
 }
 
 async function getAllProducts(data) {
-  const { currentFilter, category } = data;
-
+  const { currentFilter, category, isFree } = data;
+  console.log(currentFilter, 'currentFilter')
+  console.log(isFree,'isFree')
+  console.log(category,'category')
   try {
     let allProducts;
     const productsCollection = db.collection('products');
@@ -99,13 +101,36 @@ async function getAllProducts(data) {
     let tester = null;
     switch (currentFilter) {
       case filterEnums.newProducts:
-        query = productsCollection.orderBy('createdAt', 'desc');
+        if(isFree == "false") {
+          query = productsCollection.where('free', '==', true).orderBy('createdAt', 'desc');
+        }
+        else if(isFree == "true") {
+          query = productsCollection.where('free', '==', false).orderBy('createdAt', 'desc');
+        }
+        else {
+          query = productsCollection.orderBy('createdAt', 'desc');
+        }
         break;
       case filterEnums.trending:
-        query = productsCollection.orderBy('userViewsLength', 'desc');
+        if(isFree == "false") {
+          query = productsCollection.where('free', '==', true).orderBy('userViewsLength', 'desc');
+        }
+        else if(isFree == "true") {
+          query = productsCollection.where('free', '==', false).orderBy('userViewsLength', 'desc');
+        } else {
+          query = productsCollection.orderBy('userViewsLength', 'desc');
+        }
         break;
       case filterEnums.mostDownload:
-        query = productsCollection.orderBy('purchaseHistoryLength', 'desc');
+        if(isFree == "false") {
+          query = productsCollection.where('free', '==', true).orderBy('purchaseHistoryLength', 'desc');
+        } 
+        else if(isFree == "true") {
+          query = productsCollection.where('free', '==', false).orderBy('purchaseHistoryLength', 'desc');
+        }
+        else {
+          query = productsCollection.orderBy('purchaseHistoryLength', 'desc');
+        }   
         break;
       case filterEnums.FromtopUsers:
         query = await db.collection('users').orderBy('followersCount', 'desc').limit(30).get();
@@ -113,9 +138,17 @@ async function getAllProducts(data) {
         let productsArr = [];
 
         for (const userDoc of topUsers) {
-          const productsQuery = await db.collection('products').where('created_by', '==', userDoc.email).limit(1).get();
+          let productsQuery;
+          if(isFree == "false") {
+            productsQuery = await db.collection('products').where('created_by', '==', userDoc.email).where('free', '==', true).orderBy('userViewsLength', 'desc').orderBy('createdAt', 'desc').limit(1).get();
+          }
+          else if(isFree == "true") {
+            productsQuery = await db.collection('products').where('created_by', '==', userDoc.email).where('free', '==', false).orderBy('userViewsLength', 'desc').orderBy('createdAt', 'desc').limit(1).get();
+          }
+          else {
+            productsQuery = await db.collection('products').where('created_by', '==', userDoc.email).orderBy('userViewsLength', 'desc').orderBy('createdAt', 'desc').limit(1).get();
+          }
           const products = productsQuery.docs.map(doc => doc.data());
-
           if (products.length > 0) {
             const validProduct = category === "null" ? products[0] : products.find(item => item.category === category);
             if (validProduct) {
@@ -158,7 +191,7 @@ const getProduct = async (_id) => {
     const productQuerySnapshot = await productsCollection.where('_id', '==', _id).get();
 
     if (productQuerySnapshot.empty) {
-      return { status: 404, code: 404, message: getErrorMessage(404) };
+      return { status: 404, code: 404, message: getErrorMessage(404), product: []};
     }
 
     const productData = productQuerySnapshot.docs[0].data();

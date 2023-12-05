@@ -44,7 +44,6 @@ async function saveUserIdInFirestore(accountId, stripeUserId) {
       stripeUserId: stripeUserId,
   }, { merge: true });
 
-  console.log(`Saved Stripe user ID ${stripeUserId}.`);
 };
 
 function createUserFromDecoded(decoded) {
@@ -320,6 +319,32 @@ async function getWishListItems(userEmail) {
   }
 }
 
+async function getDownloadableItems(email) {
+  try {
+    const productsRef = db.collection('products');
+    const query = productsRef.where('purchaseHistory', '!=', null); 
+
+    const querySnapshot = await query.get();
+
+    const products = [];
+
+    querySnapshot.forEach((doc) => {
+      const productData = doc.data();
+
+      const hasMatchingEmail = productData.purchaseHistory.some(item => item.email === email);
+
+      if (hasMatchingEmail) {
+        products.push(productData);
+      }
+    });
+    return {message: "Success", status: true, code: 201, products};
+
+  } catch (err) {
+    console.error(err);
+    return { message: getErrorMessage(500), status: false, code: 500 };
+  }
+}
+
 export default {
   signIn,
   updateUser,
@@ -328,5 +353,6 @@ export default {
   followUser,
   promotedUsers,
   wishList,
-  getWishListItems
+  getWishListItems,
+  getDownloadableItems
 };

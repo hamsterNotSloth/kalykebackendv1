@@ -1,5 +1,8 @@
 import { db } from '../../config/firebase/firebase.js';
 import stripe from 'stripe';
+import dotenv from "dotenv";
+dotenv.config();
+const stripe_secret = process.env.STRIPE_SECRET_KEY;
 const stripeInstance = stripe('sk_test_51OI4miLzxkeRIY0ySCCTWfE931dpYKJoi1wtWVVLAAXxMOuGueBBTyoTMxTnOv1jeWhU88Iu2N7PoGfXDdmObKY700i1ZzRIRM');
 
 const createPaymentIntent = async (email, amount, _id) => {
@@ -7,10 +10,11 @@ const createPaymentIntent = async (email, amount, _id) => {
     if (userData.empty) {
         return { message: getErrorMessage(404), status: false, code: 404 };
     }
+    const convertedAmount = parseInt(amount)
     const minimumAmount = 0.5;
-    const adjustedAmount = Math.max(amount, minimumAmount);
+    const adjustedAmount = Math.max(convertedAmount, minimumAmount);
     const user = userData.docs[0].data();
-    const plateformPercentage = (10 / 100) * amount;
+    const plateformPercentage = (20 / 100) * convertedAmount;
     const session = await stripeInstance.checkout.sessions.create({
         payment_method_types: ['card'],
         line_items: [
@@ -27,7 +31,7 @@ const createPaymentIntent = async (email, amount, _id) => {
         ],
         mode: 'payment',
         payment_intent_data: {
-            application_fee_amount: plateformPercentage,
+            application_fee_amount: Math.round(plateformPercentage * 100),
             transfer_data: {
                 destination: user.stripeUserId,
             },
@@ -54,7 +58,6 @@ const createStripeUser = async (email, accountId) => {
             type: 'account_onboarding',
         });
         const updatedAccount = await stripeInstance.accounts.retrieve(userData.stripeUserId);
-        console.log(updatedAccount.charges_enabled, 'tessst')
         return accountLink.url;
     } catch (error) {
         console.error('Error creating Stripe user:', error.message);

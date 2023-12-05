@@ -2,7 +2,16 @@ import stripe from "stripe";
 import { getErrorMessage } from "../../errors/errorMessages.js";
 import transactionService from "../services/transactionService.js";
 import { db } from "../../config/firebase/firebase.js";
-const stripeInstance = stripe('sk_test_51OI4miLzxkeRIY0ySCCTWfE931dpYKJoi1wtWVVLAAXxMOuGueBBTyoTMxTnOv1jeWhU88Iu2N7PoGfXDdmObKY700i1ZzRIRM');
+import nodemailer from 'nodemailer';
+import dotenv from "dotenv";
+import { generatePurchaseConfirmationEmailForBuyer, generatePurchaseConfirmationEmailForSeller } from "../../Emails/ProductEmails.js";
+dotenv.config();
+
+const email_user = process.env.EMAIL;
+const email_pass = process.env.EMAIL_PASS;
+const stripe_secret = process.env.STRIPE_SECRET_KEY;
+
+const stripeInstance = stripe("sk_test_51OI4miLzxkeRIY0ySCCTWfE931dpYKJoi1wtWVVLAAXxMOuGueBBTyoTMxTnOv1jeWhU88Iu2N7PoGfXDdmObKY700i1ZzRIRM");
 
 
 export const addTransaction = async (req, res) => {
@@ -10,7 +19,6 @@ export const addTransaction = async (req, res) => {
     // const { amount } = req.body;
     console.log(req.body.productId, 'outside')
     const { email } = req.user;
-    console.log(req.body, 'body')
     const session = await transactionService.createPaymentIntent(email, req.body.amount, req.body.productId);
     res.status(200).json({ sessionId: session.id });
   } catch (error) {
@@ -88,9 +96,71 @@ export const webHooks = async (req, res) => {
 
       await db.collection('products').doc(productDoc.id).update({
         purchaseHistory: updatedPurchaseHistory,
+        purchaseHistoryLength: updatedPurchaseHistory.length
       });
+      await sendPurchaseConfirmationEmail(buyerEmail, userData, productData, "buyer");
+      await sendPurchaseConfirmationEmail(productData.created_by, userData, productData, "seller");
+
       break;
     default:
       console.log(`Unhandled event type ${event.type}`);
   }
 };
+
+async function sendPurchaseConfirmationEmail(sendToEmail, userData, productData, state) {
+  const transporter = nodemailer.createTransport({
+    service: 'Yahoo',
+    auth: {
+      user: email_user,
+      pass: email_pass,
+    },
+  });
+  let mailOptions;
+  if (state == "buyer") {
+    mailOptions = {
+      from: email_user,
+      to: sendToEmail,
+      subject: 'Thank You for Your Purchase',
+      html: generatePurchaseConfirmationEmailForBuyer(userData, productData),
+    };
+  }
+  else {
+    mailOptions = {
+      from: email_user,
+      to: sendToEmail,
+      subject: 'Product Sold',
+      html: generatePurchaseConfirmationEmailForSeller(userData, productData),
+    };
+  }
+
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`Email sent: ${info.response}`);
+  } catch (error) {
+    console.log(`Email Error: ${error.message}`);
+  }
+}
+
+// function generatePurchaseConfirmationEmailForBuyer( productData) {
+//   return `
+//     <div style="font-family: 'Arial', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px; background-color: #fff;">
+//       <h2 style="color: #333; text-align: center;">Product Sold</h2>
+//       <p style="font-size: 16px; color: #666; text-align: center;">Product sold, yeah. You are getting ${productData.price}</p>
+//       <p style="font-size: 16px; color: #666; text-align: center;">Product: ${productData.title}</p>
+//       <p style="font-size: 16px; color: #666; text-align: center;">Product link: <a href="${generateDynamicLink(productData)}" style="color: #007BFF; text-decoration: none;">Open</a></p>
+//     </div>
+//   `;
+// }
+
+// function generatePurchaseConfirmationEmailForSeller(userData, productData) {
+//   return `
+//     <div style="font-family: 'Arial', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px; background-color: #fff;">
+//       <h2 style="color: #333; text-align: center;">Thank You for Your Purchase</h2>
+//       <p style="font-size: 16px; color: #666; text-align: center;">Dear ${userData.userName || 'Customer'},</p>
+//       <p style="font-size: 16px; color: #666; text-align: center;">Thank you for your purchase! Your product has been successfully bought.</p>
+//       <p style="font-size: 16px; color: #666; text-align: center;">Product: ${productData.title}</p>
+//       <p style="font-size: 16px; color: #666; text-align: center;">Product link: <a href="${generateDynamicLink(productData)}" style="color: #007BFF; text-decoration: none;">Open</a></p>
+//     </div>
+//   `;
+// }

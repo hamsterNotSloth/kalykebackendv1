@@ -2,7 +2,7 @@ import { db } from '../../config/firebase/firebase.js';
 import stripe from 'stripe';
 import dotenv from "dotenv";
 dotenv.config();
-const stripe_secret = process.env.STRIPE_SECRET_KEY;
+const stripe_secret = process.env.STRIPE_SECRET_KEY_YATHRATH_TEST;
 const stripeInstance = stripe('sk_test_51OI4miLzxkeRIY0ySCCTWfE931dpYKJoi1wtWVVLAAXxMOuGueBBTyoTMxTnOv1jeWhU88Iu2N7PoGfXDdmObKY700i1ZzRIRM');
 
 const createPaymentIntent = async (email, amount, _id) => {

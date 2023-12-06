@@ -5,13 +5,22 @@ import Product from "../model/product.js";
 import User from "../model/user.js";
 import { v4 as uuidv4 } from 'uuid';
 
+const allowedExtensionsDownloadHandler = async (modal) => {
+  const extensionsAllowed = modal.map(item => {
+    return item.downloadLink.split(/[#?]/)[0].split('.').pop().trim();
+  })
+  const uniqFiles = [...new Set(extensionsAllowed)]
+  return uniqFiles
+}
 async function createProduct(data, userRef) {
   const { title, description, images, modalSetting, category, modal, tags, price } = data;
   try {
+    const extensions = await allowedExtensionsDownloadHandler(modal)
+    console.log(extensions, 'extensions')
     const productsCollection = db.collection('products');
     const _id = uuidv4();
     let free = true
-    if(price != 0) {
+    if (price != 0) {
       free = false
     }
     await productsCollection.add({
@@ -27,7 +36,9 @@ async function createProduct(data, userRef) {
       created_by: userRef.email,
       u_id: userRef.uid,
       price: price,
-      free
+      free,
+      creator_name: userRef.name,
+      extensions
     });
 
     return { message: getSuccessMessage(201), status: true };
@@ -89,48 +100,89 @@ async function deleteProduct(_id, user) {
 }
 
 async function getAllProducts(data) {
-  const { currentFilter, category, isFree } = data;
-  console.log(currentFilter, 'currentFilter')
-  console.log(isFree,'isFree')
-  console.log(category,'category')
+  const { currentFilter, category, isFree, fileType: toSmall } = data;
   try {
     let allProducts;
     const productsCollection = db.collection('products');
-
+    const fileType = toSmall.toLowerCase()
     let query;
     let tester = null;
     switch (currentFilter) {
       case filterEnums.newProducts:
-        if(isFree == "false") {
-          query = productsCollection.where('free', '==', true).orderBy('createdAt', 'desc');
+        if (isFree == "false") {
+          if (fileType != "all filetypes") {
+            query = productsCollection.where('free', '==', true).where('extensions', 'array-contains', fileType).orderBy('createdAt', 'desc');
+          } else {
+
+            query = productsCollection.where('free', '==', true).orderBy('createdAt', 'desc');
+          }
         }
-        else if(isFree == "true") {
-          query = productsCollection.where('free', '==', false).orderBy('createdAt', 'desc');
+        else if (isFree == "true") {
+          if (fileType != "all filetypes") {
+            query = productsCollection.where('free', '==', false).where('extensions', 'array-contains', fileType).orderBy('createdAt', 'desc');
+          } else {
+            query = productsCollection.where('free', '==', false).orderBy('createdAt', 'desc');
+          }
         }
         else {
-          query = productsCollection.orderBy('createdAt', 'desc');
+          if (fileType != "all filetypes") {
+            console.log('this')
+            query = productsCollection.where('extensions', 'array-contains', fileType).orderBy('createdAt', 'desc');
+          } else {
+            console.log('that')
+            query = productsCollection.orderBy('createdAt', 'desc');
+          }
         }
         break;
       case filterEnums.trending:
-        if(isFree == "false") {
+        if (isFree == "false") {
+          if (fileType != "all filetypes") {
+            query = productsCollection.where('free', '==', true).where('extensions', 'array-contains', fileType).orderBy('userViewsLength', 'desc');
+          }
           query = productsCollection.where('free', '==', true).orderBy('userViewsLength', 'desc');
         }
-        else if(isFree == "true") {
-          query = productsCollection.where('free', '==', false).orderBy('userViewsLength', 'desc');
+        else if (isFree == "true") {
+          if (fileType != "all filetypes") {
+            query = productsCollection.where('free', '==', false).where('extensions', 'array-contains', fileType).orderBy('userViewsLength', 'desc');
+          }
+          else {
+            query = productsCollection.where('free', '==', false).orderBy('userViewsLength', 'desc');
+          }
         } else {
-          query = productsCollection.orderBy('userViewsLength', 'desc');
+          if (fileType != "all filetypes") {
+            query = productsCollection.where('extensions', 'array-contains', fileType).orderBy('userViewsLength', 'desc');
+          }
+          else {
+            query = productsCollection.orderBy('userViewsLength', 'desc');
+          }
         }
         break;
       case filterEnums.mostDownload:
-        if(isFree == "false") {
-          query = productsCollection.where('free', '==', true).orderBy('purchaseHistoryLength', 'desc');
-        } 
-        else if(isFree == "true") {
-          query = productsCollection.where('free', '==', false).orderBy('purchaseHistoryLength', 'desc');
+        if (isFree == "false") {
+          if (fileType != "all filetypes") {
+            query = productsCollection.where('free', '==', true).where('extensions', 'array-contains', fileType).orderBy('purchaseHistoryLength', 'desc');
+          }
+          else {
+            query = productsCollection.where('free', '==', true).orderBy('purchaseHistoryLength', 'desc');
+          }
+        }
+        else if (isFree == "true") {
+          if (fileType != "all filetypes") {
+            query = productsCollection.where('free', '==', false).where('extensions', 'array-contains', fileType).orderBy('purchaseHistoryLength', 'desc');
+          }
+          else {
+            query = productsCollection.where('free', '==', false).orderBy('purchaseHistoryLength', 'desc');
+          }
         }
         else {
-          query = productsCollection.orderBy('purchaseHistoryLength', 'desc');
-        }   
+          if (fileType != "all filetypes") {
+            query = productsCollection.where('extensions', 'array-contains', fileType).orderBy('purchaseHistoryLength', 'desc');
+          }
+          else {
+            query = productsCollection.orderBy('purchaseHistoryLength', 'desc');
+
+          }
+        }
         break;
       case filterEnums.FromtopUsers:
         query = await db.collection('users').orderBy('followersCount', 'desc').limit(30).get();
@@ -139,14 +191,29 @@ async function getAllProducts(data) {
 
         for (const userDoc of topUsers) {
           let productsQuery;
-          if(isFree == "false") {
-            productsQuery = await db.collection('products').where('created_by', '==', userDoc.email).where('free', '==', true).orderBy('userViewsLength', 'desc').orderBy('createdAt', 'desc').limit(1).get();
+          if (isFree == "false") {
+            if (fileType != "all filetypes") {
+              productsQuery = await db.collection('products').where('extensions', 'array-contains', fileType).where('created_by', '==', userDoc.email).where('free', '==', true).orderBy('userViewsLength', 'desc').orderBy('createdAt', 'desc').limit(1).get();
+            }
+            else {
+              productsQuery = await db.collection('products').where('created_by', '==', userDoc.email).where('free', '==', true).orderBy('userViewsLength', 'desc').orderBy('createdAt', 'desc').limit(1).get();
+            }
           }
-          else if(isFree == "true") {
-            productsQuery = await db.collection('products').where('created_by', '==', userDoc.email).where('free', '==', false).orderBy('userViewsLength', 'desc').orderBy('createdAt', 'desc').limit(1).get();
+          else if (isFree == "true") {
+            if (fileType != "all filetypes") {
+              productsQuery = await db.collection('products').where('extensions', 'array-contains', fileType).where('created_by', '==', userDoc.email).where('free', '==', false).orderBy('userViewsLength', 'desc').orderBy('createdAt', 'desc').limit(1).get();
+            }
+            else {
+              productsQuery = await db.collection('products').where('created_by', '==', userDoc.email).where('free', '==', false).orderBy('userViewsLength', 'desc').orderBy('createdAt', 'desc').limit(1).get();
+            }
           }
           else {
-            productsQuery = await db.collection('products').where('created_by', '==', userDoc.email).orderBy('userViewsLength', 'desc').orderBy('createdAt', 'desc').limit(1).get();
+            if (fileType != "all filetypes") {
+              productsQuery = await db.collection('products').where('extensions', 'array-contains', fileType).where('created_by', '==', userDoc.email).orderBy('userViewsLength', 'desc').orderBy('createdAt', 'desc').limit(1).get();
+            }
+            else {
+              productsQuery = await db.collection('products').where('created_by', '==', userDoc.email).orderBy('userViewsLength', 'desc').orderBy('createdAt', 'desc').limit(1).get();
+            }
           }
           const products = productsQuery.docs.map(doc => doc.data());
           if (products.length > 0) {
@@ -191,7 +258,7 @@ const getProduct = async (_id) => {
     const productQuerySnapshot = await productsCollection.where('_id', '==', _id).get();
 
     if (productQuerySnapshot.empty) {
-      return { status: 404, code: 404, message: getErrorMessage(404), product: []};
+      return { status: 404, code: 404, message: getErrorMessage(404), product: [] };
     }
 
     const productData = productQuerySnapshot.docs[0].data();
@@ -525,6 +592,47 @@ async function addPurchase(productId, email) {
   }
 }
 
+async function addRating(productId, user, rating) {
+  try {
+    const productQuery = await db.collection('products').where('_id', '==', productId).get();
+  
+    if (!productQuery.empty) {
+      const productDoc = productQuery.docs[0]; 
+      const ratingsArray = productDoc.data().ratings || [];
+      
+      const existingRatingIndex = ratingsArray.findIndex(
+        (rating) => rating.email === user.email
+      );
+  
+      if (existingRatingIndex === -1) {
+        ratingsArray.push({
+          email: user.email,
+          u_id: user.uid,
+          rating: rating
+        });
+  
+        const sumOfRatings = ratingsArray.reduce((total, r) => total + r.rating, 0);
+        const avgRating = sumOfRatings / ratingsArray.length;
+  
+        await productDoc.ref.update({
+          ratings: ratingsArray,
+          avgRating: avgRating 
+        });
+  
+        console.log(`Added rating for user with email ${user.email}`);
+      } else {
+        console.log(`User with email ${user.email} has already rated the product`);
+      }
+    }
+  
+    return { message: getSuccessMessage(204), status: false, code: 204 };
+  } 
+  catch (error) {
+    console.error(error, 'error'); // Changed console.log to console.error for errors
+    return { message: getErrorMessage(500), status: false, code: 500 };
+  }
+}
+
 export default {
   createProduct,
   getMyProducts,
@@ -538,5 +646,6 @@ export default {
   deleteComment,
   addPurchase,
   addReply,
-  deleteReply
+  deleteReply,
+  addRating
 };

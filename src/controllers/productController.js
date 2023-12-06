@@ -233,13 +233,25 @@ export const productPurchase = async(req, res) => {
   const { email } = req.user;
 
   try {
-    const updatedProduct = await productService.addPurchase(
+    const response = await productService.addPurchase(
       productId,
       email
     );
-    res.status(200).json(updatedProduct);
+    res.status(response.code  || 204 ).json(response);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 }
 
+export const addRating = async (req, res) => {
+  if(!req.params || !req.user.email || !req.body.rating) {
+    return res.status(400).json({ message: getErrorMessage(400), status: false, code: 400 })
+  }
+  try {
+    const response = await productService.addRating(req.params.productId, req.user, req.body.rating)
+    res.status(response.code || 204).json(response);
+  } catch(error) {
+    console.log(error,'error')
+    res.status(500).json({ error: error.message });
+  }
+}

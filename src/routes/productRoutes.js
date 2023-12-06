@@ -1,6 +1,6 @@
 import { Router } from "express";
 import validateToken from "../../middleware/validateToken.js";
-import { createProduct, deleteProduct, getAllProduct, getUserProducts, getProduct, getSimilarProducts, productView, getAllSearchedProducts, addComments, deleteComment, productPurchase, addReply, deleteReply } from "../controllers/productController.js";
+import { createProduct, deleteProduct, getAllProduct, getUserProducts, getProduct, getSimilarProducts, productView, getAllSearchedProducts, addComments, deleteComment, productPurchase, addReply, deleteReply, addRating } from "../controllers/productController.js";
 const productRoutes = Router();
 
 productRoutes.post('/',validateToken, createProduct);
@@ -16,5 +16,6 @@ productRoutes.patch('/:productId/comments', validateToken, addComments )
 productRoutes.delete('/:productId/comments/:commentId', validateToken, deleteComment )
 productRoutes.patch('/:productId/comments/:commentId/replies', validateToken, addReply);
 productRoutes.delete('/:productId/comments/:commentId/replies/:replyId', validateToken, deleteReply);
+productRoutes.patch('/:productId/rating', validateToken, addRating);
 
 export default productRoutes;

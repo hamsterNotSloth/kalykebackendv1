@@ -123,7 +123,7 @@ async function updateUser(email, updatedUserData) {
   try {
     const userQuery = await db.collection('users').where('email', '==', email).get();
     const productsCollection = db.collection('products');
-
+    console.log(updatedUserData,'updatedUserData')
     const querySnapshot = await productsCollection.where('created_by', '==', email).get();
     if (userQuery.empty) {
       return { message: getErrorMessage(404), status: false, code: 404 };

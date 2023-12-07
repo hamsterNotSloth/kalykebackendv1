@@ -15,9 +15,9 @@ async function signIn(req) {
     }
 
     const email = decoded.providerData[0].email || "No Email";
-    
+
     const userQuery = await db.collection('users').where('email', '==', email).get();
-    
+
     if (userQuery.empty) {
       const userData = createUserFromDecoded(decoded);
       await db.collection('users').doc(decoded.uid).set(userData);
@@ -27,8 +27,8 @@ async function signIn(req) {
           card_payments: { requested: true },
           transfers: { requested: true },
         },
-    });
-    await saveUserIdInFirestore(decoded.uid, user.id);
+      });
+      await saveUserIdInFirestore(decoded.uid, user.id);
       return { message: getSuccessMessage(201), status: true, code: 201, token: `firebase ${decoded.stsTokenManager.accessToken}` };
     } else {
       return { message: getSuccessMessage(200), status: true, code: 200, token: `firebase ${decoded.stsTokenManager.accessToken}` };
@@ -41,7 +41,7 @@ async function signIn(req) {
 async function saveUserIdInFirestore(accountId, stripeUserId) {
   const userRef = db.collection('users').doc(accountId);
   await userRef.set({
-      stripeUserId: stripeUserId,
+    stripeUserId: stripeUserId,
   }, { merge: true });
 
 };
@@ -79,18 +79,18 @@ async function userProfile(id, authId) {
       if (currentItem.userViews) {
         return accumulator + currentItem.userViews.length;
       } else {
-        return accumulator; 
+        return accumulator;
       }
     }, 0);
-    
+
     const totalDownloads = productsCreated.reduce((accumulator, currentItem) => {
       if (currentItem.purchaseHistory) {
         return accumulator + currentItem.purchaseHistory.length;
       } else {
-        return accumulator; 
+        return accumulator;
       }
     }, 0);
-    
+
     const totalComments = productsCreated.reduce((accumulator, currentItem) => {
       if (currentItem.commentsLength != null) {
         return accumulator + currentItem.commentsLength;
@@ -98,7 +98,7 @@ async function userProfile(id, authId) {
         return accumulator;
       }
     }, 0);
-    
+
     let permissionGranter = false;
     if (authId == id) {
       permissionGranter = true;
@@ -122,7 +122,9 @@ async function userProfile(id, authId) {
 async function updateUser(email, updatedUserData) {
   try {
     const userQuery = await db.collection('users').where('email', '==', email).get();
+    const productsCollection = db.collection('products');
 
+    const querySnapshot = await productsCollection.where('created_by', '==', email).get();
     if (userQuery.empty) {
       return { message: getErrorMessage(404), status: false, code: 404 };
     }
@@ -130,12 +132,27 @@ async function updateUser(email, updatedUserData) {
     const userSnapshot = userQuery.docs[0];
 
     const existingUser = userSnapshot.data();
-
-    if (updatedUserData.userName) existingUser.userName = updatedUserData.userName;
+    const batch = db.batch();
+    if (updatedUserData.userName) {
+      existingUser.userName = updatedUserData.userName
+      querySnapshot.forEach(doc => {
+        const productRef = productsCollection.doc(doc.id);
+        batch.update(productRef, { creator_name: updatedUserData.userName });
+      });
+    };
+    if (updatedUserData.profilePicture) {
+      existingUser.profilePicture = updatedUserData.profilePicture
+      querySnapshot.forEach(doc => {
+        const productRef = productsCollection.doc(doc.id);
+        batch.update(productRef, { profileImg: updatedUserData.profilePicture });
+      });
+    };
     if (updatedUserData.description) existingUser.description = updatedUserData.description;
     if (updatedUserData.socialMedia) existingUser.socialMedia = updatedUserData.socialMedia;
-    if (updatedUserData.profilePicture) existingUser.profilePicture = updatedUserData.profilePicture;
 
+
+    // Commit the batch update
+    await batch.commit();
     await userSnapshot.ref.set(existingUser);
 
     return { message: getSuccessMessage(201), status: true, code: 201, updatedUser: existingUser };
@@ -311,7 +328,7 @@ async function getWishListItems(userEmail) {
       const productData = doc.data();
       products.push(productData);
     });
-    return {message: "Success", status: true, code: 201, products};
+    return { message: "Success", status: true, code: 201, products };
 
   } catch (err) {
     console.error(err);
@@ -322,7 +339,7 @@ async function getWishListItems(userEmail) {
 async function getDownloadableItems(email) {
   try {
     const productsRef = db.collection('products');
-    const query = productsRef.where('purchaseHistory', '!=', null); 
+    const query = productsRef.where('purchaseHistory', '!=', null);
 
     const querySnapshot = await query.get();
 
@@ -337,7 +354,7 @@ async function getDownloadableItems(email) {
         products.push(productData);
       }
     });
-    return {message: "Success", status: true, code: 201, products};
+    return { message: "Success", status: true, code: 201, products };
 
   } catch (err) {
     console.error(err);

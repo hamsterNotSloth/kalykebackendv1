@@ -15,8 +15,17 @@ const allowedExtensionsDownloadHandler = async (modal) => {
 async function createProduct(data, userRef) {
   const { title, description, images, modalSetting, category, modal, tags, price } = data;
   try {
+    const { email } = userRef;
+    const usersCollection = db.collection('users');
+    const querySnapshot = await usersCollection.where('email', '==', email).get();
+    if (querySnapshot.empty) {
+      return res.status(404).json({
+        message: 'User not found',
+        status: false,
+      });
+    }
+    const userData = querySnapshot.docs[0].data();
     const extensions = await allowedExtensionsDownloadHandler(modal)
-    console.log(extensions, 'extensions')
     const productsCollection = db.collection('products');
     const _id = uuidv4();
     let free = true
@@ -33,12 +42,13 @@ async function createProduct(data, userRef) {
       modalSetting,
       category,
       createdAt: Date.now(),
-      created_by: userRef.email,
-      u_id: userRef.uid,
+      created_by: userData.email,
+      u_id: userData.u_id,
       price: price,
       free,
-      creator_name: userRef.name,
-      extensions
+      creator_name: userData.userName,
+      extensions,
+      profileImg: userData.profilePicture
     });
 
     return { message: getSuccessMessage(201), status: true };
@@ -595,38 +605,38 @@ async function addPurchase(productId, email) {
 async function addRating(productId, user, rating) {
   try {
     const productQuery = await db.collection('products').where('_id', '==', productId).get();
-  
+
     if (!productQuery.empty) {
-      const productDoc = productQuery.docs[0]; 
+      const productDoc = productQuery.docs[0];
       const ratingsArray = productDoc.data().ratings || [];
-      
+
       const existingRatingIndex = ratingsArray.findIndex(
         (rating) => rating.email === user.email
       );
-  
+
       if (existingRatingIndex === -1) {
         ratingsArray.push({
           email: user.email,
           u_id: user.uid,
           rating: rating
         });
-  
+
         const sumOfRatings = ratingsArray.reduce((total, r) => total + r.rating, 0);
         const avgRating = sumOfRatings / ratingsArray.length;
-  
+
         await productDoc.ref.update({
           ratings: ratingsArray,
-          avgRating: avgRating 
+          avgRating: avgRating
         });
-  
+
         console.log(`Added rating for user with email ${user.email}`);
       } else {
         console.log(`User with email ${user.email} has already rated the product`);
       }
     }
-  
+
     return { message: getSuccessMessage(204), status: false, code: 204 };
-  } 
+  }
   catch (error) {
     console.error(error, 'error'); // Changed console.log to console.error for errors
     return { message: getErrorMessage(500), status: false, code: 500 };

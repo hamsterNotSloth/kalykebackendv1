@@ -251,7 +251,6 @@ export const addRating = async (req, res) => {
     const response = await productService.addRating(req.params.productId, req.user, req.body.rating)
     res.status(response.code || 204).json(response);
   } catch(error) {
-    console.log(error,'error')
     res.status(500).json({ error: error.message });
   }
 }

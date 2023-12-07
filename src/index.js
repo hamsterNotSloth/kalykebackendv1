@@ -22,7 +22,7 @@ app.use(cors(
   credentials: true,
 },
 {
-  origin: 'http://kalyke.in', 
+  origin: 'https://kalyke.in', 
   credentials: true,
 },
 {

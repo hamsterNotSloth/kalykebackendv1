@@ -63,7 +63,7 @@ export const webHooks = async (req, res) => {
   let event;
   try {
 
-    event = stripeInstance.webhooks.constructEvent(req.body, sig, 'whsec_G1LAIEKuursdRLe4WH28CTYQLvQKib9C');
+    event = stripeInstance.webhooks.constructEvent(req.body, sig, 'whsec_JELyl8rRM1u8Bkg0uRmWRI6q30s3IVlo');
 
   } catch (err) {
     console.log(`Webhook Error: ${err.message}`);

@@ -5,7 +5,10 @@ import Product from "../model/product.js";
 import { db } from "../../config/firebase/firebase.js";
 import { v4 as uuidv4 } from 'uuid';
 import stripe from 'stripe';
-const stripeInstance = stripe('sk_test_51OI4miLzxkeRIY0ySCCTWfE931dpYKJoi1wtWVVLAAXxMOuGueBBTyoTMxTnOv1jeWhU88Iu2N7PoGfXDdmObKY700i1ZzRIRM')
+import dotenv from "dotenv";
+dotenv.config();
+const stripe_secret = process.env.STRIPE_SECRET_KEY_YATHRATH_TEST;
+const stripeInstance = stripe(stripe_secret)
 
 async function signIn(req) {
   try {
@@ -22,11 +25,7 @@ async function signIn(req) {
       const userData = createUserFromDecoded(decoded);
       await db.collection('users').doc(decoded.uid).set(userData);
       const user = await stripeInstance.accounts.create({
-        type: 'express',
-        capabilities: {
-          card_payments: { requested: true },
-          transfers: { requested: true },
-        },
+        type: 'standard',
       });
       await saveUserIdInFirestore(decoded.uid, user.id);
       return { message: getSuccessMessage(201), status: true, code: 201, token: `firebase ${decoded.stsTokenManager.accessToken}` };
@@ -34,6 +33,7 @@ async function signIn(req) {
       return { message: getSuccessMessage(200), status: true, code: 200, token: `firebase ${decoded.stsTokenManager.accessToken}` };
     }
   } catch (err) {
+    console.log(err, 'erroror')
     return { message: getErrorMessage(500), code: 500, err };
   }
 }
@@ -47,11 +47,35 @@ async function saveUserIdInFirestore(accountId, stripeUserId) {
 };
 
 function createUserFromDecoded(decoded) {
+  const socialMedia = [
+    {
+      link: null,
+      socialMediaName: "Website"
+    },
+    {
+      link: null,
+      socialMediaName: "Instagram"
+    },
+    {
+      link: null,
+      socialMediaName: "Facebook"
+    },
+    {
+      link: null,
+      socialMediaName: "Youtube"
+    },
+    {
+      link: null,
+      socialMediaName: "Linkedin"
+    }
+  ];
   return {
-    userName: decoded.displayName,
+    userName: decoded.displayName || "No userName",
     email: decoded.providerData[0].email || "No Email",
-    profilePicture: decoded.photoURL,
+    profilePicture: decoded.photoURL || "No image",
     u_id: decoded.uid || decoded.providerData[0].uid,
+    socialMedia: socialMedia,
+    paymentAccountLink: false,
     _id: uuidv4(),
     createdAt: Date.now()
   };
@@ -61,7 +85,6 @@ async function userProfile(id, authId) {
   try {
     const userProfileByUidQuery = await db.collection('users').where('u_id', '==', id).get();
     const userProfileByEmailQuery = await db.collection('users').where('email', '==', id).get();
-
     let userProfile;
 
     if (!userProfileByUidQuery.empty) {
@@ -103,7 +126,6 @@ async function userProfile(id, authId) {
     if (authId == id) {
       permissionGranter = true;
     }
-
     return {
       message: getSuccessMessage(200),
       permissionGranter,
@@ -123,7 +145,6 @@ async function updateUser(email, updatedUserData) {
   try {
     const userQuery = await db.collection('users').where('email', '==', email).get();
     const productsCollection = db.collection('products');
-    console.log(updatedUserData,'updatedUserData')
     const querySnapshot = await productsCollection.where('created_by', '==', email).get();
     if (userQuery.empty) {
       return { message: getErrorMessage(404), status: false, code: 404 };

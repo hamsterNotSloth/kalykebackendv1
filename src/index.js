@@ -7,7 +7,8 @@ import Routes from "./routes/index.js";
 import { createServer } from "http";
 import path from "path";
 import { fileURLToPath } from "url";
-import { webHooks } from "./controllers/transactionController.js";
+import { webHooks, webHooksConnect } from "./controllers/transactionController.js";
+import bodyParser from "body-parser";
 const __filename = fileURLToPath(import.meta.url); 
 const __dirname = path.dirname(__filename)
 const port = process.env.PORT;
@@ -31,6 +32,8 @@ app.use(cors(
 }
 )); 
 app.use("/webhook", express.raw({type: 'application/json'}), webHooks);
+app.use("/webhook/connect", bodyParser.raw({type: 'application/json'}), webHooksConnect)
+
 app.use(json());
 app.use(urlencoded({ extended: true }));
 app.use("/api", Routes);

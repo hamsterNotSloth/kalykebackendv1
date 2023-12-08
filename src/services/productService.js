@@ -48,6 +48,7 @@ async function createProduct(data, userRef) {
       free,
       creator_name: userData.userName,
       extensions,
+      stripeUserId: userData.stripeUserId,
       profileImg: userData.profilePicture
     });
 
@@ -136,10 +137,8 @@ async function getAllProducts(data) {
         }
         else {
           if (fileType != "all filetypes") {
-            console.log('this')
             query = productsCollection.where('extensions', 'array-contains', fileType).orderBy('createdAt', 'desc');
           } else {
-            console.log('that')
             query = productsCollection.orderBy('createdAt', 'desc');
           }
         }
@@ -629,7 +628,6 @@ async function addRating(productId, user, rating) {
           avgRating: avgRating
         });
 
-        console.log(`Added rating for user with email ${user.email}`);
       } else {
         console.log(`User with email ${user.email} has already rated the product`);
       }
@@ -638,7 +636,7 @@ async function addRating(productId, user, rating) {
     return { message: getSuccessMessage(204), status: false, code: 204 };
   }
   catch (error) {
-    console.error(error, 'error'); // Changed console.log to console.error for errors
+    console.error(error, 'error');
     return { message: getErrorMessage(500), status: false, code: 500 };
   }
 }

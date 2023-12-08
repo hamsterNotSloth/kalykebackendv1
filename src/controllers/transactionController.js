@@ -9,21 +9,20 @@ dotenv.config();
 
 const email_user = process.env.EMAIL;
 const email_pass = process.env.EMAIL_PASS;
-const stripe_secret = process.env.STRIPE_SECRET_KEY;
-
-const stripeInstance = stripe("sk_test_51OI4miLzxkeRIY0ySCCTWfE931dpYKJoi1wtWVVLAAXxMOuGueBBTyoTMxTnOv1jeWhU88Iu2N7PoGfXDdmObKY700i1ZzRIRM");
-
+const stripe_secret = process.env.STRIPE_SECRET_KEY_YATHRATH_TEST;
+const stripe_secret_webhook = process.env.STRIPE_SECRET_WEBHOOK
+const stripe_secret_webhook_connect = process.env.STRIPE_SECRET_WEBHOOK_CONNECT
+const stripeInstance = stripe(stripe_secret);
 
 export const addTransaction = async (req, res) => {
   try {
     // const { amount } = req.body;
-    console.log(req.body.productId, 'outside')
     const { email } = req.user;
     const session = await transactionService.createPaymentIntent(email, req.body.amount, req.body.productId);
     res.status(200).json({ sessionId: session.id });
   } catch (error) {
     console.error('Error creating payment intent:', error.message);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -63,14 +62,12 @@ export const webHooks = async (req, res) => {
   let event;
   try {
 
-    event = stripeInstance.webhooks.constructEvent(req.body, sig, 'whsec_JELyl8rRM1u8Bkg0uRmWRI6q30s3IVlo');
+    event = stripeInstance.webhooks.constructEvent(req.body, sig, stripe_secret_webhook);
 
   } catch (err) {
     console.log(`Webhook Error: ${err.message}`);
     return;
   }
-
-  // Handle the event
   switch (event.type) {
     case 'payment_intent.succeeded':
       const paymentIntentSucceeded = event.data.object;
@@ -102,7 +99,51 @@ export const webHooks = async (req, res) => {
       });
       await sendPurchaseConfirmationEmail(buyerEmail, userData, productData, "buyer");
       await sendPurchaseConfirmationEmail(productData.created_by, userData, productData, "seller");
+      break;
+    default:
+      console.log(`Unhandled event type ${event.type}`);
+  }
+};
 
+async function updateUserStatus(connectedAccountId) {
+  const usersCollection = db.collection('users');
+
+  try {
+    const userQuery = await usersCollection.where('stripeUserId', '==', connectedAccountId).get();
+
+    if (!userQuery.empty) {
+      const userDoc = userQuery.docs[0];
+      await userDoc.ref.update({ paymentAccountLink: true });
+    } else {
+      console.log(`User with connectedAccountId ${connectedAccountId} not found.`);
+    }
+  } catch (error) {
+    console.error('Error updating user status:', error.message);
+  }
+}
+
+
+
+export const webHooksConnect = async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+
+  let event;
+  try {
+
+    event = stripeInstance.webhooks.constructEvent(req.body, sig, stripe_secret_webhook_connect);
+
+  } catch (err) {
+    console.log(`Webhook Error: ${err.message}`);
+    return;
+  }
+  switch (event.type) {
+    case "account.updated":
+      const connectedAccountId = event.data.object.id; 
+      const verificationStatus = event.data.object;
+      console.log(verificationStatus.settings)
+      if(verificationStatus.requirements.pending_verification.length == 0) {
+        await updateUserStatus(connectedAccountId)
+      }
       break;
     default:
       console.log(`Unhandled event type ${event.type}`);

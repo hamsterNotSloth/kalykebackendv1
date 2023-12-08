@@ -27,7 +27,8 @@ export const signIn = async (req, res) => {
     }
     return res.status(400).json({ message: getErrorMessage(400), status: false, code: 400 })
   } catch (error) {
-    console.log(error, 'errorerror')
+    
+    console.log(error, 'ourside')
     res.status(500).json({
       message: getErrorMessage(500),
       status: false,
@@ -153,7 +154,6 @@ export const updateUserInfo = async (req, res) => {
     }
     return
   } catch (error) {
-    console.log(error, 'error')
     return res.status(500).json({
       message: getErrorMessage(500), status: false
     });
@@ -170,7 +170,6 @@ export const getUserProfile = async (req, res) => {
     const userProfile = await userService.userProfile(id, authId);
     return res.status(userProfile.code).json(userProfile)
   } catch (error) {
-    console.log(error, 'error')
     return res.status(500).json({
       message: getErrorMessage(500), status: false
     });
@@ -189,7 +188,6 @@ export const getMyProfile = async (req, res) => {
     const userProfile = await userService.myProfile(email);
     return res.status(userProfile.code).json(userProfile)
   } catch (error) {
-    console.log(error, 'error')
     return res.status(500).json({
       message: getErrorMessage(500), status: false
     });
@@ -206,7 +204,6 @@ export const follow = async (req, res) => {
     const response = await userService.followUser(follower_email, following_email)
     return res.status(response.code).json(response)
   } catch (error) {
-    console.log(error)
     return res.status(500).json({
       message: getErrorMessage(500), status: false
     });

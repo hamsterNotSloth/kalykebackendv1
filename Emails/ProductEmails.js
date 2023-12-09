@@ -55,5 +55,5 @@ export function generatePurchaseConfirmationEmailForSeller(buyerData, productDat
 }
 
 function generateDynamicLink(productData) {
-    return `http://localhost:3000/products/${productData._id}`;
+    return `http://localhost:3000/products/${productData._id}`; //todo
 }

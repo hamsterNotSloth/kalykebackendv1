@@ -1,7 +1,5 @@
 import bcrypt from "bcryptjs";
-import User from "../model/user.js";
 import { getErrorMessage, getSuccessMessage } from "../../errors/errorMessages.js";
-import Product from "../model/product.js";
 import { db } from "../../config/firebase/firebase.js";
 import { v4 as uuidv4 } from 'uuid';
 import stripe from 'stripe';
@@ -24,10 +22,6 @@ async function signIn(req) {
     if (userQuery.empty) {
       const userData = createUserFromDecoded(decoded);
       await db.collection('users').doc(decoded.uid).set(userData);
-      const user = await stripeInstance.accounts.create({
-        type: 'standard',
-      });
-      await saveUserIdInFirestore(decoded.uid, user.id);
       return { message: getSuccessMessage(201), status: true, code: 201, token: `firebase ${decoded.stsTokenManager.accessToken}` };
     } else {
       return { message: getSuccessMessage(200), status: true, code: 200, token: `firebase ${decoded.stsTokenManager.accessToken}` };
@@ -278,18 +272,6 @@ async function followUser(follower_email, following_email) {
   }
 }
 
-async function promotedUsers() {
-  try {
-    const promotedUsers = await User.find({ isPromotionOn: true })
-    if (!promotedUsers) {
-      return { message: getSuccessMessage(204), status: true, code: 204 };
-    }
-    return { promotedUsers, message: getErrorMessage(200), status: true, code: 200 }
-  } catch (err) {
-    return { message: getErrorMessage(500), status: false, code: 500 };
-  }
-}
-
 async function wishList(data) {
   const { productId, userEmail } = data;
 
@@ -389,7 +371,6 @@ export default {
   userProfile,
   myProfile,
   followUser,
-  promotedUsers,
   wishList,
   getWishListItems,
   getDownloadableItems

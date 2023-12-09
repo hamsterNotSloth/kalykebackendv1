@@ -1,8 +1,6 @@
 import { db } from "../../config/firebase/firebase.js";
 import { getErrorMessage, getSuccessMessage } from "../../errors/errorMessages.js";
 import { filterEnums } from "../enums/filterEnums.js";
-import Product from "../model/product.js";
-import User from "../model/user.js";
 import { v4 as uuidv4 } from 'uuid';
 
 const allowedExtensionsDownloadHandler = async (modal) => {
@@ -13,7 +11,7 @@ const allowedExtensionsDownloadHandler = async (modal) => {
   return uniqFiles
 }
 async function createProduct(data, userRef) {
-  const { title, description, images, modalSetting, category, modal, tags, price } = data;
+  const { title, description, images, modalSetting, category, modal, tags, price, license } = data;
   try {
     const { email } = userRef;
     const usersCollection = db.collection('users');
@@ -27,6 +25,7 @@ async function createProduct(data, userRef) {
     const userData = querySnapshot.docs[0].data();
     const extensions = await allowedExtensionsDownloadHandler(modal)
     const productsCollection = db.collection('products');
+    const arrayOfTags = tags.map(innerArray => innerArray.join(''));
     const _id = uuidv4();
     let free = true
     if (price != 0) {
@@ -37,7 +36,7 @@ async function createProduct(data, userRef) {
       description,
       images,
       modal,
-      tags,
+      tags: arrayOfTags,
       _id,
       modalSetting,
       category,
@@ -49,7 +48,8 @@ async function createProduct(data, userRef) {
       creator_name: userData.userName,
       extensions,
       stripeUserId: userData.stripeUserId,
-      profileImg: userData.profilePicture
+      profileImg: userData.profilePicture,
+      license
     });
 
     return { message: getSuccessMessage(201), status: true };

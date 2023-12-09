@@ -15,10 +15,11 @@ const stripe_secret_webhook_connect = process.env.STRIPE_SECRET_WEBHOOK_CONNECT
 const stripeInstance = stripe(stripe_secret);
 
 export const addTransaction = async (req, res) => {
+  console.log(req.body,'req')
   try {
     // const { amount } = req.body;
     const { email } = req.user;
-    const session = await transactionService.createPaymentIntent(email, req.body.amount, req.body.productId);
+    const session = await transactionService.createPaymentIntent(email, req.body.amount, req.body.productId, req.body.countryCode, req.body.exchangeRate);
     res.status(200).json({ sessionId: session.id });
   } catch (error) {
     console.error('Error creating payment intent:', error.message);

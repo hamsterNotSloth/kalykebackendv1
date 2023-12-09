@@ -5,7 +5,7 @@ const productRoutes = Router();
 
 productRoutes.post('/',validateToken, createProduct);
 productRoutes.post('/:productId/purchase', validateToken, productPurchase )
-productRoutes.get('/product/similar-modals', getSimilarProducts);
+productRoutes.get('/product/similar-modals', getSimilarProducts); //models todo
 productRoutes.get('/user-products/:id', getUserProducts);
 productRoutes.get('/all-products', getAllProduct);
 productRoutes.get('/:id', getProduct);

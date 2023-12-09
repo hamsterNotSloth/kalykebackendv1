@@ -2,7 +2,6 @@ import dotenv from "dotenv";
 dotenv.config();
 import express, { json, raw, urlencoded } from "express";
 import cors from "cors";
-import connection from "../config/database/connection.js";
 import Routes from "./routes/index.js";
 import { createServer } from "http";
 import path from "path";
@@ -16,7 +15,6 @@ const port = process.env.PORT;
 const app = express();
 const server = createServer(app);
 
-connection();
 app.use(cors(
   {
   origin: 'http://localhost:3000', 
@@ -33,7 +31,6 @@ app.use(cors(
 )); 
 app.use("/webhook", express.raw({type: 'application/json'}), webHooks);
 app.use("/webhook/connect", bodyParser.raw({type: 'application/json'}), webHooksConnect)
-
 app.use(json());
 app.use(urlencoded({ extended: true }));
 app.use("/api", Routes);

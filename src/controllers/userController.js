@@ -1,5 +1,4 @@
 import { getErrorMessage, getSuccessMessage, } from "../../errors/errorMessages.js";
-import User from "../model/product.js";
 import userService from "../services/userService.js"
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
@@ -27,8 +26,6 @@ export const signIn = async (req, res) => {
     }
     return res.status(400).json({ message: getErrorMessage(400), status: false, code: 400 })
   } catch (error) {
-    
-    console.log(error, 'ourside')
     res.status(500).json({
       message: getErrorMessage(500),
       status: false,
@@ -38,7 +35,6 @@ export const signIn = async (req, res) => {
 
 export const verifyUser = async (req, res) => {
   const token = req.params.token;
-
   try {
     // const response = await userService.verifyUser()
   } catch (error) {
@@ -210,20 +206,9 @@ export const follow = async (req, res) => {
   }
 }
 
-export const getPromotedUsers = async (req, res) => {
-  try {
-    const response = await userService.promotedUsers()
-    return res.status(response.code).json(response)
-  } catch (error) {
-    return res.status(500).json({
-      message: getErrorMessage(500), status: false
-    });
-  }
-}
-
 export const serverHealthCheck = async (req, res) => {
   res.status(200).json("Hello world from the server!")
-}
+} //todo separate file
 
 export const wishList = async (req, res) => {
   if (req.body && !req.body.productId) {
@@ -321,4 +306,4 @@ export const resetPasswordRequest = async (req, res) => {
   } catch (error) {
     return res.status(500).json({ message: 'Server error.', status: false });
   }
-}
+} //todo remove and update to fireabase

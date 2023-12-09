@@ -8,7 +8,7 @@ export const createProduct = async (req, res) => {
   }
   try {
     const response = await productService.createProduct(req.body.productDetails, req.user);
-    res.status(201).json(response)
+    res.status(200).json(response)
   } catch (err) {
     res.status(err.code || 500).json({ message: err.message, status: false });
   }

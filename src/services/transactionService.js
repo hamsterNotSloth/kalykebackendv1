@@ -36,7 +36,6 @@ const createPaymentIntent = async (email, amount, _id, countryCode, exchangeRate
     const product = productData.docs[0].data();
     const convertedAmount = parseInt(amount)
     const intPlateFormFee = parseInt(plateFormFee)
-    console.log(typeof plateFormFee)
     const toLocalAmount = convertedAmount * exchangeRate
     const sellerMoney = toLocalAmount - (toLocalAmount * intPlateFormFee / 100)
     const session = await stripeInstance.checkout.sessions.create({
@@ -44,7 +43,7 @@ const createPaymentIntent = async (email, amount, _id, countryCode, exchangeRate
         line_items: [
             {
                 price_data: {
-                    currency: "inr", 
+                    currency: countryCode, 
                     product_data: {
                         name: product.title, 
                     },

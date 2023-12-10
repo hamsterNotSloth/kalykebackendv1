@@ -14,10 +14,13 @@ const port = process.env.PORT;
 
 const app = express();
 const server = createServer(app);
-
 app.use(cors(
   {
   origin: 'http://localhost:3000', 
+  credentials: true,
+},
+{
+  origin: 'https://kalyke3d.com', 
   credentials: true,
 },
 {

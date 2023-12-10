@@ -32,14 +32,6 @@ async function signIn(req) {
   }
 }
 
-async function saveUserIdInFirestore(accountId, stripeUserId) {
-  const userRef = db.collection('users').doc(accountId);
-  await userRef.set({
-    stripeUserId: stripeUserId,
-  }, { merge: true });
-
-};
-
 function createUserFromDecoded(decoded) {
   const socialMedia = [
     {

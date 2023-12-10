@@ -25,7 +25,6 @@ async function createProduct(data, userRef) {
     const userData = querySnapshot.docs[0].data();
     const extensions = await allowedExtensionsDownloadHandler(modal)
     const productsCollection = db.collection('products');
-    const arrayOfTags = tags.map(innerArray => innerArray.join(''));
     const _id = uuidv4();
     let free = true
     if (price != 0) {
@@ -36,7 +35,7 @@ async function createProduct(data, userRef) {
       description,
       images,
       modal,
-      tags: arrayOfTags,
+      tags,
       _id,
       modalSetting,
       category,

@@ -36,8 +36,8 @@ const createPaymentIntent = async (email, amount, _id, countryCode, exchangeRate
     const product = productData.docs[0].data();
     const convertedAmount = parseInt(amount)
     const intPlateFormFee = parseInt(plateFormFee)
-    const toLocalAmount = convertedAmount * exchangeRate
-    const sellerMoney = toLocalAmount - (toLocalAmount * intPlateFormFee / 100)
+    const toLocalAmount = Math.floor(convertedAmount * exchangeRate)
+    const sellerMoney = Math.floor(toLocalAmount - (toLocalAmount * intPlateFormFee / 100))
     const session = await stripeInstance.checkout.sessions.create({
         payment_method_types: ['card'],
         line_items: [
@@ -47,7 +47,7 @@ const createPaymentIntent = async (email, amount, _id, countryCode, exchangeRate
                     product_data: {
                         name: product.title, 
                     },
-                    unit_amount: Math.round(toLocalAmount),
+                    unit_amount: Math.floor(toLocalAmount),
                 },
                 quantity: 1,
             },
@@ -56,7 +56,7 @@ const createPaymentIntent = async (email, amount, _id, countryCode, exchangeRate
         payment_intent_data: {
             // application_fee_amount: 600,
             transfer_data: {
-                amount: Math.round(sellerMoney),
+                amount: Math.floor(sellerMoney),
                 destination: product.stripeUserId,
             },
             metadata: {

@@ -8,26 +8,6 @@ const stripeInstance = stripe(stripe_secret);
 const appUrl = process.env.APP_URL
 const plateFormFee = process.env.PLATEFORM_FEE_PERCENTAGE
 
-
-const getExchangeRate = async (fromCurrency, toCurrency) => {
-    const apiKey = 'YOUR_OPEN_EXCHANGE_RATES_API_KEY'; // Replace with your API key
-
-    try {
-        const response = await axios.get(`https://open.er-api.com/v6/latest/${fromCurrency}?apikey=${apiKey}`);
-        const rates = response.data.rates;
-
-        if (toCurrency in rates) {
-            return rates[toCurrency];
-        } else {
-            throw new Error(`Exchange rate not available for ${toCurrency}`);
-        }
-    } catch (error) {
-        console.error(`Error fetching exchange rate: ${error.message}`);
-        throw error;
-    }
-};
-
-
 const createPaymentIntent = async (email, amount, _id, countryCode, exchangeRate) => {
     const productData = await db.collection('products').where('_id', '==', _id).get();
     if (productData.empty) {
@@ -36,7 +16,7 @@ const createPaymentIntent = async (email, amount, _id, countryCode, exchangeRate
     const product = productData.docs[0].data();
     const convertedAmount = parseInt(amount)
     const intPlateFormFee = parseInt(plateFormFee)
-    const toLocalAmount = Math.floor(convertedAmount * exchangeRate)
+    const toLocalAmount = convertedAmount * exchangeRate
     const sellerMoney = Math.floor(toLocalAmount - (toLocalAmount * intPlateFormFee / 100))
     const session = await stripeInstance.checkout.sessions.create({
         payment_method_types: ['card'],
@@ -47,7 +27,7 @@ const createPaymentIntent = async (email, amount, _id, countryCode, exchangeRate
                     product_data: {
                         name: product.title, 
                     },
-                    unit_amount: Math.floor(toLocalAmount),
+                    unit_amount: Math.floor(toLocalAmount * 100),
                 },
                 quantity: 1,
             },
@@ -56,7 +36,7 @@ const createPaymentIntent = async (email, amount, _id, countryCode, exchangeRate
         payment_intent_data: {
             // application_fee_amount: 600,
             transfer_data: {
-                amount: Math.floor(sellerMoney),
+                amount: Math.floor(sellerMoney * 100),
                 destination: product.stripeUserId,
             },
             metadata: {

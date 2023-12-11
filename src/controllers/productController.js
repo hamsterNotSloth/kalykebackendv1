@@ -3,6 +3,7 @@ import productService from "../services/productService.js";
 
 export const createProduct = async (req, res) => {
   const { title, description } = req.body.productDetails
+  console.log(req.body, ':::::products')
   if (!title || !description) {
     return res.status(400).json({ message: getErrorMessage(400), status: false })
   }
@@ -10,6 +11,7 @@ export const createProduct = async (req, res) => {
     const response = await productService.createProduct(req.body.productDetails, req.user);
     res.status(200).json(response)
   } catch (err) {
+    console.log(err, 'outside')
     res.status(err.code || 500).json({ message: err.message, status: false });
   }
 };

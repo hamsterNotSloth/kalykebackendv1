@@ -12,6 +12,7 @@ const allowedExtensionsDownloadHandler = async (modal) => {
 }
 async function createProduct(data, userRef) {
   const { title, description, images, modalSetting, category, modal, tags, price, license } = data;
+  console.log(userRef,'userRefuserRef')
   try {
     const { email } = userRef;
     const usersCollection = db.collection('users');

@@ -24,6 +24,11 @@ async function signIn(req) {
       await db.collection('users').doc(decoded.uid).set(userData);
       return { message: getSuccessMessage(201), status: true, code: 201, token: `firebase ${decoded.stsTokenManager.accessToken}` };
     } else {
+      const userDoc = userQuery.docs[0];
+      const userVerified = userDoc.data().emailVerified;
+      if (decoded.emailVerified && !userVerified) {
+        await db.collection('users').doc(decoded.uid).update({ emailVerified: true });
+      }
       return { message: getSuccessMessage(200), status: true, code: 200, token: `firebase ${decoded.stsTokenManager.accessToken}` };
     }
   } catch (err) {
@@ -60,6 +65,7 @@ function createUserFromDecoded(decoded) {
     email: decoded.providerData[0].email || "No Email",
     profilePicture: decoded.photoURL || "No image",
     u_id: decoded.uid || decoded.providerData[0].uid,
+    emailVerified: decoded.emailVerified,
     socialMedia: socialMedia,
     paymentAccountLink: false,
     _id: uuidv4(),

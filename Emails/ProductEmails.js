@@ -21,6 +21,8 @@
 //     `;
 // }
 
+const appUrl = process.env.APP_URL
+
 export function generatePurchaseConfirmationEmailForBuyer(userData, productData) {
     return `
       <div style="font-family: 'Arial', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px; background-color: #fff;">
@@ -55,5 +57,5 @@ export function generatePurchaseConfirmationEmailForSeller(buyerData, productDat
 }
 
 function generateDynamicLink(productData) {
-    return `http://localhost:3000/products/${productData._id}`; //todo
+    return `${appUrl}/products/${productData._id}`; 
 }

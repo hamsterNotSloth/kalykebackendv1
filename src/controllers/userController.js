@@ -44,76 +44,6 @@ export const verifyUser = async (req, res) => {
   }
 }
 
-// export const resetPasswordRequestController = async (req, res) => {
-//   const { email } = req.body;
-
-//   const resetToken = crypto.randomBytes(20).toString('hex');
-//   const resetTokenExpiration = Date.now() + 1600000;
-//   const newDate = new Date(resetTokenExpiration);
-//   try {
-//     const user = await User.findOne({ email });
-
-//     if (user.email === "Email") {
-//       user.resetToken = resetToken;
-//       user.resetTokenExpiration = resetTokenExpiration;
-//       await user.save();
-
-//       const transporter = nodemailer.createTransport({
-//         service: 'Yahoo',
-//         auth: {
-//           user: email_user,
-//           pass: email_pass,
-//         },
-//       });
-
-//       const mailOptions = {
-//         from: email_user,
-//         to: email,
-//         subject: 'Password Reset Request',
-//         html: `
-//         <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
-//         <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="max-width: 500px; margin: 0 auto; background-color: #ffffff; padding: 20px;">
-//         <tr>
-//             <td align="center">
-//                 <h3 style="color: #333;">Link Expires at:  ${newDate}</h3>
-//             </td>
-//          </tr>    
-//            <tr>
-//                 <td align="center">
-//                     <h1 style="color: #333;">Password Reset</h1>
-//                 </td>
-//             </tr>
-//             <tr>
-//                 <td align="center" style="font-size: 16px; color: #333; padding-top: 10px;">
-//                     You have requested a password reset. Click the button below to reset your password.
-//                 </td>
-//             </tr>
-//             <tr>
-//                 <td align="center" style="padding-top: 20px;">
-//                     <a href="http://localhost:3000/reset-password/${resetToken}" style="text-decoration: none; background-color: #0073e6; color: #ffffff; padding: 10px 20px; border-radius: 5px; font-size: 16px; display: inline-block;">Reset Password</a>
-//                 </td>
-//             </tr>
-//             <tr>
-//                 <td align="center" style="font-size: 14px; color: #666; padding-top: 20px;">
-//                     If you did not request a password reset, please ignore this email.
-//                 </td>
-//             </tr>
-//         </table>
-//     </body>
-//       `,
-//       };
-//       await transporter.sendMail(mailOptions);
-//     }
-
-//     return res.status(200).json({ message: 'Password reset email sent. Please check your inbox or spam.', status: true });
-//   } catch (error) {
-//     return res.status(500).json({
-//       message: getErrorMessage(500), status: false
-//     });
-//   }
-// }
-
-
 export const resetPassword = async (req, res) => {
   const { token } = req.params;
   const { password } = req.body;
@@ -208,7 +138,7 @@ export const follow = async (req, res) => {
 
 export const serverHealthCheck = async (req, res) => {
   res.status(200).json("Hello world from the server!")
-} //todo separate file
+} 
 
 export const wishList = async (req, res) => {
   if (req.body && !req.body.productId) {
@@ -262,48 +192,3 @@ export const getUserDownloadableItems = async(req, res) => {
     res.status(500).json({ error: error.message });
   }
 }
-
-
-// For now this function is not being used, converting current authentication method to firebase auth
-export const resetPasswordRequest = async (req, res) => {
-  const { email } = req.body;
-
-  const resetToken = crypto.randomBytes(20).toString('hex');
-  const resetTokenExpiration = Date.now() + 1600000;
-  const newDate = new Date(resetTokenExpiration);
-  try {
-    const user = await User.findOne({ email });
-    const emailTemplate = fs.readFileSync('resetPasswordEmailTemplate.html', 'utf8');
-    const templateData = {
-      newDate: newDate,
-      resetToken: resetToken,
-    };
-    const renderedEmail = ejs.render(emailTemplate, templateData);
-
-    if (user.email === "Email") {
-      user.resetToken = resetToken;
-      user.resetTokenExpiration = resetTokenExpiration;
-      await user.save();
-
-      const transporter = nodemailer.createTransport({
-        service: 'Yahoo',
-        auth: {
-          user: email_user,
-          pass: email_pass,
-        },
-      });
-
-      const mailOptions = {
-        from: email_user,
-        to: email,
-        subject: 'Password Reset Request',
-        html: renderedEmail
-      };
-      await transporter.sendMail(mailOptions);
-    }
-
-    return res.status(200).json({ message: 'Password reset email sent. Please check your inbox or spam.', status: true });
-  } catch (error) {
-    return res.status(500).json({ message: 'Server error.', status: false });
-  }
-} //todo remove and update to fireabase

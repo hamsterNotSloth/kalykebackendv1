@@ -44,22 +44,6 @@ export const verifyUser = async (req, res) => {
   }
 }
 
-export const resetPassword = async (req, res) => {
-  const { token } = req.params;
-  const { password } = req.body;
-
-  try {
-    const response = await userService.resetPassword({ token, password })
-    if (response.status == false) {
-      return res.status(response.code).json(response);
-    }
-
-    return res.status(200).json(response);
-  } catch (error) {
-    return res.status(500).json({ message: 'Server error.' });
-  }
-}
-
 export const updateUserInfo = async (req, res) => {
   try {
     const newUserData = {

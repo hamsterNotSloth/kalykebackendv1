@@ -1,26 +1,3 @@
-// export function generatePurchaseConfirmationEmailForBuyer( productData) {
-//     return `
-//       <div style="font-family: 'Arial', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px; background-color: #fff;">
-//         <h2 style="color: #333; text-align: center;">Product Sold</h2>
-//         <p style="font-size: 16px; color: #666; text-align: center;">Product sold, yeah. You are getting ${productData.price}</p>
-//         <p style="font-size: 16px; color: #666; text-align: center;">Product: ${productData.title}</p>
-//         <p style="font-size: 16px; color: #666; text-align: center;">Product link: <a href="${generateDynamicLink(productData)}" style="color: #007BFF; text-decoration: none;">Open</a></p>
-//       </div>
-//     `;
-//   }
-  
-// export function generatePurchaseConfirmationEmailForSeller( productData) {
-//     return `
-//       <div style="font-family: 'Arial', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px; background-color: #fff;">
-//         <h2 style="color: #333; text-align: center;">Thank You for Your Purchase</h2>
-//         <p style="font-size: 16px; color: #666; text-align: center;">Dear Seller},</p>
-//         <p style="font-size: 16px; color: #666; text-align: center;">Thank you for your purchase! Your product has been successfully bought.</p>
-//         <p style="font-size: 16px; color: #666; text-align: center;">Product: ${productData.title}</p>
-//         <p style="font-size: 16px; color: #666; text-align: center;">Product link: <a href="${generateDynamicLink(productData)}" style="color: #007BFF; text-decoration: none;">Open</a></p>
-//       </div>
-//     `;
-// }
-
 const appUrl = process.env.APP_URL
 
 export function generatePurchaseConfirmationEmailForBuyer(userData, productData) {

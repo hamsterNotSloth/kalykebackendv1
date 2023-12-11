@@ -140,7 +140,6 @@ export const webHooksConnect = async (req, res) => {
     case "account.updated":
       const connectedAccountId = event.data.object.id; 
       const verificationStatus = event.data.object;
-      console.log(verificationStatus, 'verificationStatus')
       if(verificationStatus.requirements.pending_verification.length == 0) {
         await updateUserStatus(connectedAccountId)
       }

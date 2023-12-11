@@ -3,7 +3,6 @@ import {
   signIn,
   updateUserInfo,
   getUserProfile,
-  resetPassword,
   getMyProfile,
   follow,
   serverHealthCheck,
@@ -16,7 +15,6 @@ import permissionGranter from "../../middleware/permissionGranter.js";
 const userRoutes = Router();
 
 userRoutes.post("/", signIn);
-userRoutes.post("/reset-password/:token", resetPassword);
 userRoutes.get("/user/my-profile", validateToken, getMyProfile);
 userRoutes.get("/:id", permissionGranter, getUserProfile);
 userRoutes.patch("/update-user", validateToken, updateUserInfo);

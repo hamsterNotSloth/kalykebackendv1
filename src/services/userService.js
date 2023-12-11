@@ -38,7 +38,6 @@ async function signIn(req) {
       return { message: getSuccessMessage(200), status: true, code: 200, token: `firebase ${decoded.stsTokenManager.accessToken}` };
     }
   } catch (err) {
-    console.log(err, 'erroror')
     return { message: getErrorMessage(500), code: 500, err };
   }
 }

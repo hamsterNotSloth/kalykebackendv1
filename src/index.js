@@ -24,10 +24,6 @@ app.use(cors(
   credentials: true,
 },
 {
-  origin: 'https://kalyke.in', 
-  credentials: true,
-},
-{
   origin: 'http://16.171.75.64', 
   credentials: true,
 }

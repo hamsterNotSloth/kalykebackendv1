@@ -15,7 +15,6 @@ const stripe_secret_webhook_connect = process.env.STRIPE_SECRET_WEBHOOK_CONNECT
 const stripeInstance = stripe(stripe_secret);
 
 export const addTransaction = async (req, res) => {
-  console.log(req.body,'req')
   try {
     // const { amount } = req.body;
     const { email } = req.user;
@@ -141,7 +140,7 @@ export const webHooksConnect = async (req, res) => {
     case "account.updated":
       const connectedAccountId = event.data.object.id; 
       const verificationStatus = event.data.object;
-      console.log(verificationStatus.settings)
+      console.log(verificationStatus, 'verificationStatus')
       if(verificationStatus.requirements.pending_verification.length == 0) {
         await updateUserStatus(connectedAccountId)
       }

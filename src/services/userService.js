@@ -22,6 +22,12 @@ async function signIn(req) {
     if (userQuery.empty) {
       const userData = createUserFromDecoded(decoded);
       await db.collection('users').doc(decoded.uid).set(userData);
+      if (!userData.stripeUserId) {
+        const stripeUser = await stripeInstance.accounts.create({
+            type: 'standard',
+        });
+        await saveUserIdInFirestore(userData.u_id, stripeUser.id);
+    }
       return { message: getSuccessMessage(201), status: true, code: 201, token: `firebase ${decoded.stsTokenManager.accessToken}` };
     } else {
       const userDoc = userQuery.docs[0];
@@ -36,6 +42,14 @@ async function signIn(req) {
     return { message: getErrorMessage(500), code: 500, err };
   }
 }
+
+async function saveUserIdInFirestore(accountId, stripeUserId) {
+  const userRef = db.collection('users').doc(accountId);
+  await userRef.set({
+      stripeUserId: stripeUserId,
+  }, { merge: true });
+
+};
 
 function createUserFromDecoded(decoded) {
   const socialMedia = [

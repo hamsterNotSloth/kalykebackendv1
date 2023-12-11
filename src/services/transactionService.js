@@ -34,7 +34,6 @@ const createPaymentIntent = async (email, amount, _id, countryCode, exchangeRate
         ],
         mode: 'payment',
         payment_intent_data: {
-            // application_fee_amount: 600,
             transfer_data: {
                 amount: Math.floor(sellerMoney * 100),
                 destination: product.stripeUserId,
@@ -55,18 +54,8 @@ const createStripeUser = async (email, accountId) => {
     try {
         const userRaw = await db.collection('users').where('email', '==', email).get();
         const userData = userRaw.docs[0].data()
-        let stripeUser;
-        if (!userData.stripeUserId) {
-            stripeUser = await stripeInstance.accounts.create({
-                type: 'standard',
-            });
-            await saveUserIdInFirestore(userData.u_id, stripeUser.id);
-        }
-        if(userData.stripeUserId) {
-            stripeUser=userData.stripeUserId
-        }
         const accountLink = await stripeInstance.accountLinks.create({
-            account: stripeUser.id || stripeUser,
+            account: userData.stripeUserId,
             refresh_url: `${appUrl}/new/test/refersh`,
             return_url: `${appUrl}/user/${userData.u_id}`,
             type: 'account_onboarding',

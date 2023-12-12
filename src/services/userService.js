@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import stripe from 'stripe';
 import dotenv from "dotenv";
 dotenv.config();
-const stripe_secret = process.env.STRIPE_SECRET_KEY_YATHRATH_TEST;
+const stripe_secret = process.env.STRIPE_SECRET_KEY_YATHRATH_PROD;
 const stripeInstance = stripe(stripe_secret)
 
 async function signIn(req) {
@@ -26,6 +26,7 @@ async function signIn(req) {
         const stripeUser = await stripeInstance.accounts.create({
             type: 'standard',
         });
+      console.log(stripeUser,'userVerified')
         await saveUserIdInFirestore(userData.u_id, stripeUser.id);
     }
       return { message: getSuccessMessage(201), status: true, code: 201, token: `firebase ${decoded.stsTokenManager.accessToken}` };
@@ -38,6 +39,7 @@ async function signIn(req) {
       return { message: getSuccessMessage(200), status: true, code: 200, token: `firebase ${decoded.stsTokenManager.accessToken}` };
     }
   } catch (err) {
+    console.log(err, "error::")
     return { message: getErrorMessage(500), code: 500, err };
   }
 }

@@ -26,6 +26,7 @@ export const signIn = async (req, res) => {
     }
     return res.status(400).json({ message: getErrorMessage(400), status: false, code: 400 })
   } catch (error) {
+    console.log(error, 'error outside')
     res.status(500).json({
       message: getErrorMessage(500),
       status: false,

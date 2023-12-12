@@ -9,7 +9,7 @@ dotenv.config();
 
 const email_user = process.env.EMAIL;
 const email_pass = process.env.EMAIL_PASS;
-const stripe_secret = process.env.STRIPE_SECRET_KEY_YATHRATH_TEST;
+const stripe_secret = process.env.STRIPE_SECRET_KEY_YATHRATH_PROD;
 const stripe_secret_webhook = process.env.STRIPE_SECRET_WEBHOOK
 const stripe_secret_webhook_connect = process.env.STRIPE_SECRET_WEBHOOK_CONNECT
 const stripeInstance = stripe(stripe_secret);

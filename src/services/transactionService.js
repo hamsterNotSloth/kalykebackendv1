@@ -3,7 +3,7 @@ import stripe from 'stripe';
 import dotenv from "dotenv";
 import axios from "axios"
 dotenv.config();
-const stripe_secret = process.env.STRIPE_SECRET_KEY_YATHRATH_TEST;
+const stripe_secret = process.env.STRIPE_SECRET_KEY_YATHRATH_PROD;
 const stripeInstance = stripe(stripe_secret);
 const appUrl = process.env.APP_URL
 const plateFormFee = process.env.PLATEFORM_FEE_PERCENTAGE

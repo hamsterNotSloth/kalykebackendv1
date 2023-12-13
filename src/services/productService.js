@@ -3,9 +3,11 @@ import { getErrorMessage, getSuccessMessage } from "../../errors/errorMessages.j
 import { filterEnums } from "../enums/filterEnums.js";
 import { v4 as uuidv4 } from 'uuid';
 
+const fileTypeTotalLength = process.env.FILE_TYPE_TOTAL_LENGTH
+
 const allowedExtensionsDownloadHandler = async (modal) => {
   const extensionsAllowed = modal.map(item => {
-    return item.downloadLink.split(/[#?]/)[0].split('.').pop().trim();
+    return item.downloadLink.split(/[#?]/)[0].split('.').pop().trim().toLowerCase();
   })
   const uniqFiles = [...new Set(extensionsAllowed)]
   return uniqFiles
@@ -112,31 +114,33 @@ async function deleteProduct(_id, user) {
 async function getAllProducts(data) {
   const { currentFilter, category, isFree, fileType: toSmall } = data;
   try {
+
     let allProducts;
     const productsCollection = db.collection('products');
-    const fileType = toSmall.toLowerCase()
+    const fileTypeArray = toSmall ? toSmall.split(',') : [];
+    const fileType = fileTypeArray
     let query;
     let tester = null;
     switch (currentFilter) {
       case filterEnums.newProducts:
         if (isFree == "false") {
-          if (fileType != "all file types") {
-            query = productsCollection.where('free', '==', true).where('extensions', 'array-contains', fileType).orderBy('createdAt', 'desc');
+          if (fileType.length != parseInt(fileTypeTotalLength) && fileType.length != 0) {
+            query = productsCollection.where('free', '==', true).where('extensions', 'array-contains-any', fileType).orderBy('createdAt', 'desc');
           } else {
-
             query = productsCollection.where('free', '==', true).orderBy('createdAt', 'desc');
           }
         }
         else if (isFree == "true") {
-          if (fileType != "all file types") {
-            query = productsCollection.where('free', '==', false).where('extensions', 'array-contains', fileType).orderBy('createdAt', 'desc');
+          if (fileType.length != parseInt(fileTypeTotalLength ) && fileType.length != 0) {
+            console.log(fileType.length)
+            query = productsCollection.where('free', '==', false).where('extensions', 'array-contains-any', fileType).orderBy('createdAt', 'desc');
           } else {
             query = productsCollection.where('free', '==', false).orderBy('createdAt', 'desc');
           }
         }
         else {
-          if (fileType != "all file types") {
-            query = productsCollection.where('extensions', 'array-contains', fileType).orderBy('createdAt', 'desc');
+          if (fileType.length != parseInt(fileTypeTotalLength)  && fileType.length != 0) {
+            query = productsCollection.where('extensions', 'array-contains-any', fileType).orderBy('createdAt', 'desc');
           } else {
             query = productsCollection.orderBy('createdAt', 'desc');
           }
@@ -144,21 +148,21 @@ async function getAllProducts(data) {
         break;
       case filterEnums.trending:
         if (isFree == "false") {
-          if (fileType != "all file types") {
-            query = productsCollection.where('free', '==', true).where('extensions', 'array-contains', fileType).orderBy('userViewsLength', 'desc');
+          if (fileType.length != parseInt(fileTypeTotalLength)  && fileType.length != 0) {
+            query = productsCollection.where('free', '==', true).where('extensions', 'array-contains-any', fileType).orderBy('userViewsLength', 'desc');
           }
           query = productsCollection.where('free', '==', true).orderBy('userViewsLength', 'desc');
         }
         else if (isFree == "true") {
-          if (fileType != "all file types") {
-            query = productsCollection.where('free', '==', false).where('extensions', 'array-contains', fileType).orderBy('userViewsLength', 'desc');
+          if (fileType.length != parseInt(fileTypeTotalLength)  && fileType.length != 0) {
+            query = productsCollection.where('free', '==', false).where('extensions', 'array-contains-any', fileType).orderBy('userViewsLength', 'desc');
           }
           else {
             query = productsCollection.where('free', '==', false).orderBy('userViewsLength', 'desc');
           }
         } else {
-          if (fileType != "all file types") {
-            query = productsCollection.where('extensions', 'array-contains', fileType).orderBy('userViewsLength', 'desc');
+          if (fileType.length != parseInt(fileTypeTotalLength)  && fileType.length != 0) {
+            query = productsCollection.where('extensions', 'array-contains-any', fileType).orderBy('userViewsLength', 'desc');
           }
           else {
             query = productsCollection.orderBy('userViewsLength', 'desc');
@@ -167,24 +171,24 @@ async function getAllProducts(data) {
         break;
       case filterEnums.mostDownload:
         if (isFree == "false") {
-          if (fileType != "all file types") {
-            query = productsCollection.where('free', '==', true).where('extensions', 'array-contains', fileType).orderBy('purchaseHistoryLength', 'desc');
+          if (fileType.length != parseInt(fileTypeTotalLength)  && fileType.length != 0) {
+            query = productsCollection.where('free', '==', true).where('extensions', 'array-contains-any', fileType).orderBy('purchaseHistoryLength', 'desc');
           }
           else {
             query = productsCollection.where('free', '==', true).orderBy('purchaseHistoryLength', 'desc');
           }
         }
         else if (isFree == "true") {
-          if (fileType != "all file types") {
-            query = productsCollection.where('free', '==', false).where('extensions', 'array-contains', fileType).orderBy('purchaseHistoryLength', 'desc');
+          if (fileType.length != parseInt(fileTypeTotalLength)  && fileType.length != 0) {
+            query = productsCollection.where('free', '==', false).where('extensions', 'array-contains-any', fileType).orderBy('purchaseHistoryLength', 'desc');
           }
           else {
             query = productsCollection.where('free', '==', false).orderBy('purchaseHistoryLength', 'desc');
           }
         }
         else {
-          if (fileType != "all file types") {
-            query = productsCollection.where('extensions', 'array-contains', fileType).orderBy('purchaseHistoryLength', 'desc');
+          if (fileType.length != parseInt(fileTypeTotalLength)  && fileType.length != 0) {
+            query = productsCollection.where('extensions', 'array-contains-any', fileType).orderBy('purchaseHistoryLength', 'desc');
           }
           else {
             query = productsCollection.orderBy('purchaseHistoryLength', 'desc');
@@ -200,24 +204,24 @@ async function getAllProducts(data) {
         for (const userDoc of topUsers) {
           let productsQuery;
           if (isFree == "false") {
-            if (fileType != "all file types") {
-              productsQuery = await db.collection('products').where('extensions', 'array-contains', fileType).where('created_by', '==', userDoc.email).where('free', '==', true).orderBy('userViewsLength', 'desc').orderBy('createdAt', 'desc').limit(1).get();
+            if (fileType.length != parseInt(fileTypeTotalLength)  && fileType.length != 0) {
+              productsQuery = await db.collection('products').where('extensions', 'array-contains-any', fileType).where('created_by', '==', userDoc.email).where('free', '==', true).orderBy('userViewsLength', 'desc').orderBy('createdAt', 'desc').limit(1).get();
             }
             else {
               productsQuery = await db.collection('products').where('created_by', '==', userDoc.email).where('free', '==', true).orderBy('userViewsLength', 'desc').orderBy('createdAt', 'desc').limit(1).get();
             }
           }
           else if (isFree == "true") {
-            if (fileType != "all file types") {
-              productsQuery = await db.collection('products').where('extensions', 'array-contains', fileType).where('created_by', '==', userDoc.email).where('free', '==', false).orderBy('userViewsLength', 'desc').orderBy('createdAt', 'desc').limit(1).get();
+            if (fileType.length != parseInt(fileTypeTotalLength)  && fileType.length != 0) {
+              productsQuery = await db.collection('products').where('extensions', 'array-contains-any', fileType).where('created_by', '==', userDoc.email).where('free', '==', false).orderBy('userViewsLength', 'desc').orderBy('createdAt', 'desc').limit(1).get();
             }
             else {
               productsQuery = await db.collection('products').where('created_by', '==', userDoc.email).where('free', '==', false).orderBy('userViewsLength', 'desc').orderBy('createdAt', 'desc').limit(1).get();
             }
           }
           else {
-            if (fileType != "all file types") {
-              productsQuery = await db.collection('products').where('extensions', 'array-contains', fileType).where('created_by', '==', userDoc.email).orderBy('userViewsLength', 'desc').orderBy('createdAt', 'desc').limit(1).get();
+            if (fileType.length != parseInt(fileTypeTotalLength)  && fileType.length != 0) {
+              productsQuery = await db.collection('products').where('extensions', 'array-contains-any', fileType).where('created_by', '==', userDoc.email).orderBy('userViewsLength', 'desc').orderBy('createdAt', 'desc').limit(1).get();
             }
             else {
               productsQuery = await db.collection('products').where('created_by', '==', userDoc.email).orderBy('userViewsLength', 'desc').orderBy('createdAt', 'desc').limit(1).get();

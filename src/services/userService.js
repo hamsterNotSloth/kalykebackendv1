@@ -26,7 +26,6 @@ async function signIn(req) {
         const stripeUser = await stripeInstance.accounts.create({
             type: 'standard',
         });
-      console.log(stripeUser,'userVerified')
         await saveUserIdInFirestore(userData.u_id, stripeUser.id);
     }
       return { message: getSuccessMessage(201), status: true, code: 201, token: `firebase ${decoded.stsTokenManager.accessToken}` };

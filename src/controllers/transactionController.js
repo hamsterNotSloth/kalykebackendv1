@@ -66,7 +66,7 @@ export const webHooks = async (req, res) => {
 
   } catch (err) {
     console.log(`Webhook Error: ${err.message}`);
-    return;
+    return res.sendStatus(400);
   }
   switch (event.type) {
     case 'payment_intent.succeeded':
@@ -99,9 +99,23 @@ export const webHooks = async (req, res) => {
       });
       await sendPurchaseConfirmationEmail(buyerEmail, userData, productData, "buyer");
       await sendPurchaseConfirmationEmail(productData.created_by, userData, productData, "seller");
+      res.sendStatus(200)
+      break;
+    case 'payment_intent.partially_funded':
+      console.log(event, 'Webhook: payment_intent.partially_funded')
+      res.sendStatus(200)
+      break;
+    case 'payment_intent.payment_failed':
+      console.log(event, 'payment_intent.payment_failed')
+      res.sendStatus(200)
+      break;
+    case 'payment_intent.processing':
+      console.log(event, 'payment_intent.processing')
+      res.sendStatus(200)
       break;
     default:
       console.log(`Unhandled event type ${event.type}`);
+      res.sendStatus(200)
   }
 };
 
@@ -133,16 +147,17 @@ export const webHooksConnect = async (req, res) => {
     event = stripeInstance.webhooks.constructEvent(req.body, sig, stripe_secret_webhook_connect);
 
   } catch (err) {
-    console.log(`Webhook Error: ${err.message}`);
-    return;
+    console.log(`Webhook Error Stripe: ${err.message}`);
+    return res.sendStatus(400);
   }
   switch (event.type) {
     case "account.updated":
-      const connectedAccountId = event.data.object.id; 
+      const connectedAccountId = event.data.object.id;
       const verificationStatus = event.data.object;
-      if(verificationStatus.requirements.pending_verification.length == 0) {
+      if (verificationStatus.requirements.pending_verification.length == 0) {
         await updateUserStatus(connectedAccountId)
       }
+      res.sendStatus(200)
       break;
     default:
       console.log(`Unhandled event type ${event.type}`);

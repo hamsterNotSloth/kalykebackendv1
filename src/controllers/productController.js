@@ -15,10 +15,10 @@ export const createProduct = async (req, res) => {
 };
 
 export const deleteProduct = async (req, res) => {
-  if(!req.body || !req.user) {
+  if (!req.body || !req.user) {
     return res.status(400).json({ message: getErrorMessage(400), status: false })
   }
-  if(!req.body._id || !req.user.email) {
+  if (!req.body._id || !req.user.email) {
     return res.status(400).json({ message: getErrorMessage(400), status: false })
   }
   try {
@@ -35,7 +35,7 @@ export const deleteProduct = async (req, res) => {
 };
 
 export const getUserProducts = async (req, res) => {
-  if(!req.user && !req.params) {
+  if (!req.user && !req.params) {
     return;
   }
   if (req.user && req.params) {
@@ -99,13 +99,13 @@ export const getSimilarProducts = async (req, res) => {
 }
 
 export const productView = async (req, res) => {
-  if(!req.params || !req.user) {
+  if (!req.params || !req.user) {
     return
   }
-  if(req.user && !req.user.email) {
+  if (req.user && !req.user.email) {
     return
   }
-  if(req.params && !req.params.id) {
+  if (req.params && !req.params.id) {
     return
   }
   const productId = req.params.id
@@ -118,34 +118,34 @@ export const productView = async (req, res) => {
   }
 }
 
-export const getAllSearchedProducts = async(req, res) => {
-  if(req.query.products.length == 0) {
-    return res.status(204).json({products: [], status: true, code: 204}) 
+export const getAllSearchedProducts = async (req, res) => {
+  if (req.query.products.length == 0) {
+    return res.status(204).json({ products: [], status: true, code: 204 })
   }
-  try{
+  try {
     const response = await productService.searchedProducts(req.query.products)
     res.status(response.code).json(response)
 
-  } catch(error) {
+  } catch (error) {
     return res.status(500).json({
       message: getErrorMessage(500), status: false
     });
   }
 }
 
-export const addComments = async(req, res) => {
-  if(!req.body || !req.user || !req.params) {
+export const addComments = async (req, res) => {
+  if (!req.body || !req.user || !req.params) {
     return res.status(400).json({ message: getErrorMessage(400), status: false, code: 400 })
   }
-  if(!req.body.comment || !req.user.email || !req.params.productId) {
+  if (!req.body.comment || !req.user.email || !req.params.productId) {
     return res.status(400).json({ message: getErrorMessage(400), status: false, code: 400 })
   }
   const comment = req.body.comment
   const productId = req.params.productId
   try {
-    const response = await productService.addComments({comment, user:req.user, productId})
+    const response = await productService.addComments({ comment, user: req.user, productId })
     res.status(response.code).json(response)
-  } catch(error) {
+  } catch (error) {
     return res.status(500).json({
       message: getErrorMessage(500), status: false
     });
@@ -199,30 +199,30 @@ export const deleteReply = async (req, res) => {
   }
 };
 
-export const deleteComment = async(req, res) => {
-  if(!req.user || !req.params) {
+export const deleteComment = async (req, res) => {
+  if (!req.user || !req.params) {
     return res.status(400).json({ message: getErrorMessage(400), status: false, code: 400 })
   }
-  
-  if(!req.user.email || !req.params.commentId || !req.params.productId) {
+
+  if (!req.user.email || !req.params.commentId || !req.params.productId) {
     return res.status(400).json({ message: getErrorMessage(400), status: false, code: 400 })
   }
   const user = req.user.email
   const commentId = req.params.commentId
   const productId = req.params.productId
   try {
-    const response = await productService.deleteComment({user, commentId, productId})
+    const response = await productService.deleteComment({ user, commentId, productId })
     res.status(response.code).json(response)
-  } catch(error) {
-    
+  } catch (error) {
+
     return res.status(500).json({
       message: getErrorMessage(500), status: false
     });
   }
 }
 
-export const productPurchase = async(req, res) => {
-  if(!req.user || !req.params) {
+export const productPurchase = async (req, res) => {
+  if (!req.user || !req.params) {
     return res.status(400).json({ message: getErrorMessage(400), status: false, code: 400 })
   }
 
@@ -234,20 +234,20 @@ export const productPurchase = async(req, res) => {
       productId,
       email
     );
-    res.status(response.code  || 204 ).json(response);
+    res.status(response.code || 204).json(response);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 }
 
 export const addRating = async (req, res) => {
-  if(!req.params || !req.user.email || !req.body.rating) {
+  if (!req.params || !req.user.email || !req.body.rating) {
     return res.status(400).json({ message: getErrorMessage(400), status: false, code: 400 })
   }
   try {
     const response = await productService.addRating(req.params.productId, req.user, req.body.rating)
     res.status(response.code || 204).json(response);
-  } catch(error) {
+  } catch (error) {
     res.status(500).json({ error: error.message });
   }
 }

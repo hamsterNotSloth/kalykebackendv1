@@ -50,7 +50,8 @@ async function createProduct(data, userRef) {
       extensions,
       stripeUserId: userData.stripeUserId,
       profileImg: userData.profilePicture,
-      license
+      license,
+      youtubeURL: data.youtubeURL || ""
     });
 
     return { message: getSuccessMessage(201), status: true };
@@ -65,7 +66,7 @@ async function getMyProducts(data) {
     const userSnapshot = await db.collection('users').where('u_id', '==', data).limit(1).get();
 
     if (userSnapshot.empty) {
-      return { message: getErrorMessage(404), code: 404, status: false };
+      return { message: getErrorMessage(200), code: 200, status: false };
     }
 
     const userDoc = userSnapshot.docs[0];
@@ -75,7 +76,7 @@ async function getMyProducts(data) {
     const productsSnapshot = await db.collection('products').where('created_by', '==', created_by).orderBy('createdAt', 'desc').get();
 
     if (productsSnapshot.empty) {
-      return { message: getErrorMessage(404), status: false, code: 404 };
+      return { message: getErrorMessage(200), status: false, code: 200 };
     }
 
     const myProducts = productsSnapshot.docs.map((productDoc) => productDoc.data());
@@ -132,7 +133,6 @@ async function getAllProducts(data) {
         }
         else if (isFree == "true") {
           if (fileType.length != parseInt(fileTypeTotalLength ) && fileType.length != 0) {
-            console.log(fileType.length)
             query = productsCollection.where('free', '==', false).where('extensions', 'array-contains-any', fileType).orderBy('createdAt', 'desc');
           } else {
             query = productsCollection.where('free', '==', false).orderBy('createdAt', 'desc');
@@ -244,13 +244,10 @@ async function getAllProducts(data) {
         query = productsCollection;
         break;
     }
-
-    // Add category filter if category is not null
     if (category !== "null") {
       query = query.where('category', '==', category);
     }
     if (tester == null) {
-
       const querySnapshot = await query.get();
       allProducts = querySnapshot.docs.map(doc => doc.data());
     }
@@ -265,7 +262,6 @@ async function getAllProducts(data) {
 const getProduct = async (_id) => {
   try {
     const productsCollection = db.collection('products');
-
     const productQuerySnapshot = await productsCollection.where('_id', '==', _id).get();
 
     if (productQuerySnapshot.empty) {

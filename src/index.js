@@ -41,7 +41,7 @@ app.use(express.static(buildPath))
 app.get("/*", function(req, res){
   res.sendFile(
       path.join(__dirname, "../../kalykefrontendv1/build/index.html"),
-      function (err) {
+      function (err, html) {
         if (err) {
           res.status(500).send(err);
         }

@@ -121,10 +121,6 @@ export const follow = async (req, res) => {
   }
 }
 
-export const serverHealthCheck = async (req, res) => {
-  res.status(200).json("Hello world from the server!")
-} 
-
 export const wishList = async (req, res) => {
   if (req.body && !req.body.productId) {
     return res.status(400).json({

@@ -5,7 +5,6 @@ import {
   getUserProfile,
   getMyProfile,
   follow,
-  serverHealthCheck,
   wishList,
   getWishListItems,
   getUserDownloadableItems,
@@ -19,7 +18,6 @@ userRoutes.get("/user/my-profile", validateToken, getMyProfile);
 userRoutes.get("/:id", permissionGranter, getUserProfile);
 userRoutes.patch("/update-user", validateToken, updateUserInfo);
 userRoutes.patch("/follow", validateToken, follow);
-userRoutes.get("/health/status", serverHealthCheck)   
 userRoutes.post("/wishlist", validateToken, wishList)
 userRoutes.get("/wishlist/products", validateToken, getWishListItems)
 userRoutes.get('/user/downloadable-products', validateToken, getUserDownloadableItems);

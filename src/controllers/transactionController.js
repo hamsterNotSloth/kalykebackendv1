@@ -140,7 +140,9 @@ async function updateUserStatus(connectedAccountId) {
 
 export const webHooksConnect = async (req, res) => {
   const sig = req.headers['stripe-signature'];
-
+  console.log(req.body, 'body')
+  
+  console.log(req.rawBody, 'rawBody')
   let event;
   try {
 

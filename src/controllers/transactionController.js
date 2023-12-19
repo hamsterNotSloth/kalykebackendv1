@@ -1,11 +1,11 @@
+import dotenv from "dotenv";
+dotenv.config();
 import stripe from "stripe";
 import { getErrorMessage } from "../../errors/errorMessages.js";
 import transactionService from "../services/transactionService.js";
 import { db } from "../../config/firebase/firebase.js";
 import nodemailer from 'nodemailer';
-import dotenv from "dotenv";
 import { generatePurchaseConfirmationEmailForBuyer, generatePurchaseConfirmationEmailForSeller } from "../../Emails/ProductEmails.js";
-dotenv.config();
 
 const email_user = process.env.EMAIL;
 const email_pass = process.env.EMAIL_PASS;

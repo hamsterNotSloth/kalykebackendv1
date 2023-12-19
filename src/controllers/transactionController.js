@@ -13,7 +13,6 @@ const stripe_secret = process.env.STRIPE_SECRET_KEY_YATHRATH_PROD;
 const stripe_secret_webhook = process.env.STRIPE_SECRET_WEBHOOK
 const stripe_secret_webhook_connect = process.env.STRIPE_SECRET_WEBHOOK_CONNECT
 const stripeInstance = stripe(stripe_secret);
-
 export const addTransaction = async (req, res) => {
   try {
     // const { amount } = req.body;
@@ -99,24 +98,25 @@ export const webHooks = async (req, res) => {
       });
       await sendPurchaseConfirmationEmail(buyerEmail, userData, productData, "buyer");
       await sendPurchaseConfirmationEmail(productData.created_by, userData, productData, "seller");
-      res.sendStatus(200)
+      res.status(200)
       break;
     case 'payment_intent.partially_funded':
       console.log(event, 'Webhook: payment_intent.partially_funded')
-      res.sendStatus(200)
+      res.status(200)
       break;
     case 'payment_intent.payment_failed':
       console.log(event, 'payment_intent.payment_failed')
-      res.sendStatus(200)
+      res.status(200)
       break;
     case 'payment_intent.processing':
       console.log(event, 'payment_intent.processing')
-      res.sendStatus(200)
+      res.status(200)
       break;
     default:
       console.log(`Unhandled event type ${event.type}`);
-      res.sendStatus(200)
+      res.status(200)
   }
+  res.json({ received: true });
 };
 
 async function updateUserStatus(connectedAccountId) {
@@ -154,14 +154,16 @@ export const webHooksConnect = async (req, res) => {
     case "account.updated":
       const connectedAccountId = event.data.object.id;
       const verificationStatus = event.data.object;
+      console.log(verificationStatus)
       if (verificationStatus.requirements.pending_verification.length == 0) {
         await updateUserStatus(connectedAccountId)
       }
-      res.sendStatus(200)
+      res.status(200); 
       break;
     default:
       console.log(`Unhandled event type ${event.type}`);
   }
+  res.json({ received: true }); 
 };
 
 async function sendPurchaseConfirmationEmail(sendToEmail, userData, productData, state) {

@@ -29,7 +29,7 @@ app.use(cors(
 }
 )); 
 app.use("/webhook", express.raw({type: 'application/json'}), webHooks);
-app.use("/webhook/connect", bodyParser.raw({type: 'application/json'}), webHooksConnect)
+app.use("/webhook/connect", express.raw({type: 'application/json'}), webHooksConnect)
 app.use(json());
 app.use(urlencoded({ extended: true }));
 app.use("/api", Routes);

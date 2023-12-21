@@ -82,7 +82,7 @@ export const webHooks = async (req, res) => {
 
       const usersQuery = await db.collection('users').where('email', '==', buyerEmail).get();
       if (usersQuery.empty) {
-        return res.status(404).json({ error: 'User not found' });
+        return response.status(400).send(`Webhook Error: ${err.message}`);
       }
 
       const userDoc = usersQuery.docs[0];
@@ -98,23 +98,18 @@ export const webHooks = async (req, res) => {
       });
       await sendPurchaseConfirmationEmail(buyerEmail, userData, productData, "buyer");
       await sendPurchaseConfirmationEmail(productData.created_by, userData, productData, "seller");
-      res.status(200)
       break;
     case 'payment_intent.partially_funded':
       console.log(event, 'Webhook: payment_intent.partially_funded')
-      res.status(200)
       break;
     case 'payment_intent.payment_failed':
       console.log(event, 'payment_intent.payment_failed')
-      res.status(200)
       break;
     case 'payment_intent.processing':
       console.log(event, 'payment_intent.processing')
-      res.status(200)
       break;
     default:
       console.log(`Unhandled event type ${event.type}`);
-      res.status(200)
   }
   res.json({ received: true });
 };
@@ -140,9 +135,6 @@ async function updateUserStatus(connectedAccountId) {
 
 export const webHooksConnect = async (req, res) => {
   const sig = req.headers['stripe-signature'];
-  console.log(req.body, 'body')
-  
-  console.log(req.rawBody, 'rawBody')
   let event;
   try {
 
@@ -150,17 +142,17 @@ export const webHooksConnect = async (req, res) => {
 
   } catch (err) {
     console.log(`Webhook Error Stripe: ${err.message}`);
-    return res.sendStatus(400);
+    return response.status(400).send(`Webhook Error: ${err.message}`);
   }
   switch (event.type) {
     case "account.updated":
       const connectedAccountId = event.data.object.id;
       const verificationStatus = event.data.object;
+      console.log(verificationStatus, 'verificationStatus')
       console.log(verificationStatus)
       if (verificationStatus.requirements.pending_verification.length == 0) {
         await updateUserStatus(connectedAccountId)
       }
-      res.status(200); 
       break;
     default:
       console.log(`Unhandled event type ${event.type}`);

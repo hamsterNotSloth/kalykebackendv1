@@ -9,9 +9,11 @@ import { generatePurchaseConfirmationEmailForBuyer, generatePurchaseConfirmation
 
 const email_user = process.env.EMAIL;
 const email_pass = process.env.EMAIL_PASS;
+const email_service = process.env.EMAIL_SERVICE
 const stripe_secret = process.env.STRIPE_SECRET_KEY_YATHRATH_PROD;
 const stripe_secret_webhook = process.env.STRIPE_SECRET_WEBHOOK
 const stripe_secret_webhook_connect = process.env.STRIPE_SECRET_WEBHOOK_CONNECT
+
 const stripeInstance = stripe(stripe_secret);
 export const addTransaction = async (req, res) => {
   try {
@@ -69,6 +71,7 @@ export const webHooks = async (req, res) => {
   }
   switch (event.type) {
     case 'payment_intent.succeeded':
+      console.log('bought')
       const paymentIntentSucceeded = event.data.object;
       const productId = paymentIntentSucceeded.metadata.productId;
       const buyerEmail = paymentIntentSucceeded.metadata.buyerEmail;
@@ -162,7 +165,7 @@ export const webHooksConnect = async (req, res) => {
 
 async function sendPurchaseConfirmationEmail(sendToEmail, userData, productData, state) {
   const transporter = nodemailer.createTransport({
-    service: 'Yahoo',
+    service: email_service,
     auth: {
       user: email_user,
       pass: email_pass,
